@@ -3,79 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disaster Relief and Emergency Resource Allocation System</title>
+    <title>Cebu Relief Hub | Provincial Resource Allocation System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
-        .hide { display: none !important; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; background-color: #f8fafc; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(24px); }
+        .hide { display: none !important; pointer-events: none !important; }
         .active-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
         
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Command Center Accent Bar System */
+        .title-container { position: relative; display: inline-block; }
+        .title-text { position: relative; z-index: 10; line-height: 1.1; text-transform: uppercase; font-weight: 900; font-style: italic; }
+        .accent-bar { 
+            position: absolute; 
+            bottom: 4px; 
+            left: 0; 
+            height: 18px; 
+            border-radius: 2px; 
+            z-index: 0; 
+            opacity: 0.9;
+            transform: translateY(2px);
+        }
 
-        .btn-hover { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .heading-hero { font-size: 4.8rem; letter-spacing: -0.04em; }
+        @media (max-width: 768px) { .heading-hero { font-size: 2.2rem; } .accent-bar { height: 8px; bottom: 2px; } }
+
+        .card-cmd { background: white; border: 1px solid #e2e8f0; border-radius: 3rem; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
+        .card-cmd:hover { transform: translateY(-8px); box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.1); }
+
+        .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal fixes */
+        .modal-backdrop { background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); }
+        .modal-scrollable { max-height: 85vh; overflow-y: auto; width: 100%; padding-bottom: 5rem; }
+        
+        /* QR Container styling */
+        .qr-wrapper { width: 220px; height: 220px; background: white; border: 10px solid white; border-radius: 2rem; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); overflow: hidden; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
-<body class="bg-[#F8FAFC] text-slate-900 min-h-screen flex flex-col">
+<body class="text-slate-900 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white leading-tight">
 
-    <!-- NAVIGATION -->
+    <!-- NAVIGATION HUB -->
     <nav class="glass sticky top-0 z-50 border-b border-slate-200 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3 cursor-pointer group" onclick="navigateTo('landing')">
-                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
-                    <i data-lucide="shield-alert"></i>
+                <div class="w-12 h-12 bg-blue-700 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200 transition-transform group-hover:scale-110">
+                    <i data-lucide="shield-plus" class="w-7 h-7"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tight leading-none text-slate-800">Cebu Relief</h1>
-                    <p class="text-[9px] uppercase font-black text-blue-500 tracking-[0.2em] mt-1">Resource System</p>
+                    <h1 class="text-xl font-black tracking-tighter leading-none text-slate-800 uppercase italic">Cebu Relief</h1>
+                    <p class="text-[9px] uppercase font-black text-blue-600 tracking-[0.2em] mt-1.5 italic">Command Hub</p>
                 </div>
             </div>
             
             <div class="flex items-center gap-4" id="nav-actions">
-                <!-- Buttons injected via JS -->
+                <!-- Logged in state or Auth buttons injected here -->
             </div>
         </div>
     </nav>
 
     <!-- MAIN VIEW -->
-    <main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full" id="main-view">
-        <div class="flex flex-col items-center justify-center py-40 text-center space-y-4">
-            <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-            <p class="text-slate-500 font-medium animate-pulse">Syncing with Cebu Emergency Network...</p>
+    <main class="max-w-7xl mx-auto px-6 py-10 flex-1 w-full" id="main-view">
+        <div class="flex flex-col items-center justify-center py-40 text-center space-y-6">
+            <div class="w-16 h-16 border-[6px] border-blue-50 border-t-blue-700 rounded-full animate-spin"></div>
+            <p class="text-slate-400 font-black text-lg animate-pulse uppercase tracking-[0.3em] italic">Synchronizing Provincial Data...</p>
         </div>
     </main>
 
-    <!-- FOOTER -->
-    <footer class="py-12 border-t border-slate-200 mt-auto bg-white">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <p class="text-slate-400 text-sm font-semibold">© 2024 Disaster Relief and Emergency Resource Allocation System</p>
-            <p class="text-slate-300 text-[10px] uppercase tracking-widest mt-2">Connecting Communities in Cebu, Philippines</p>
+    <!-- STRATEGIC FOOTER -->
+    <footer class="bg-slate-950 text-white pt-24 pb-24 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-blue-400 to-rose-500"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[120px] -z-10"></div>
+        
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+                <!-- Branding -->
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white italic"><i data-lucide="shield-check" class="w-6 h-6 italic"></i></div>
+                        <h2 class="text-xl font-black italic tracking-tighter uppercase italic leading-none">Cebu Relief Hub</h2>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed italic uppercase font-bold tracking-tighter opacity-80 italic">
+                        Official unified resource distribution for the Province of Cebu. Coordination hub for fire, seismic, and weather emergencies.
+                    </p>
+                </div>
+
+                <!-- Emergency Hubs -->
+                <div class="space-y-6 italic">
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">Emergency Channels</h3>
+                    <ul class="space-y-4 text-sm font-bold uppercase tracking-tighter">
+                        <li class="flex items-center gap-3 text-slate-300 hover:text-white transition-colors cursor-pointer" onclick="openHotlines()">
+                            <i data-lucide="phone-forwarded" class="w-4 h-4 text-blue-500 italic"></i> PDRRMO Emergency
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-300 hover:text-white transition-colors cursor-pointer" onclick="openMap()">
+                            <i data-lucide="map" class="w-4 h-4 text-rose-500 italic"></i> Provincial Radar
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-300 hover:text-white transition-colors cursor-pointer" onclick="openDonateModal()">
+                            <i data-lucide="heart" class="w-4 h-4 text-emerald-500 italic"></i> Public Pledge Hub
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Data Resources -->
+                <div class="space-y-6 italic">
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">Data Resources</h3>
+                    <ul class="space-y-4 text-sm font-bold uppercase tracking-tighter">
+                        <li><a href="https://bfp.gov.ph/" target="_blank" class="text-slate-300 hover:text-white flex items-center gap-3"><i data-lucide="flame" class="w-4 h-4 text-orange-500 italic"></i> BFP Fire Safety</a></li>
+                        <li><a href="https://www.pagasa.dost.gov.ph/" target="_blank" class="text-slate-300 hover:text-white flex items-center gap-3"><i data-lucide="cloud-lightning" class="w-4 h-4 text-blue-400 italic"></i> PAGASA Weather</a></li>
+                        <li><a href="https://ndrrmc.gov.ph/" target="_blank" class="text-slate-300 hover:text-white flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-blue-400 italic"></i> NDRRMC Reports</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <!-- MODAL CONTAINER -->
-    <div id="modal-container" class="fixed inset-0 z-[60] hide"></div>
+    <!-- MODAL OVERLAY -->
+    <div id="modal-container" class="fixed inset-0 z-[60] hide flex items-center justify-center p-4 sm:p-6 lg:p-10 pointer-events-auto">
+        <div class="modal-backdrop absolute inset-0" onclick="closeModal()"></div>
+        <div id="modal-body" class="relative bg-white w-full max-w-5xl rounded-[5rem] shadow-2xl border-[15px] border-white fade-in modal-scrollable overflow-x-hidden p-8 sm:p-16 italic">
+            <!-- Modal Content -->
+        </div>
+    </div>
 
-    <!-- FIREBASE INTEGRATION -->
+    <!-- CORE SCRIPTS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getDatabase, ref, set, push, onValue, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        // CONFIGURATION: Using your drras-cebu credentials
+        // CONFIG: Existing Credentials
         const firebaseConfig = {
             apiKey: "AIzaSyC7N_nfJt3ceLZjbXQy4PExU762iu1pH7g",
             authDomain: "drras-cebu.firebaseapp.com",
@@ -91,41 +161,33 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // Constants
         const CEBU_LOCATIONS = {
             cities: ["Cebu City", "Mandaue City", "Lapu-Lapu City", "Talisay City", "Toledo City"],
             municipalities: ["Consolacion", "Liloan", "Minglanilla", "Cordova", "Compostela"]
         };
 
-        const ROLES = {
-            BARANGAY: 'Barangay Relief Officer',
+        const STAFF_ROLES = {
             ADMIN: 'Admin',
-            LOGISTICS: 'Delivery/Logistics Officer',
-            DONOR: 'Donor'
+            BARANGAY: 'Barangay Relief Officer',
+            LOGISTICS: 'Delivery/Logistics Officer'
         };
 
-        // State
         let currentUser = null;
         let currentUserData = null;
         let publicRequests = [];
 
-        // App Start
         async function init() {
             lucide.createIcons();
-            
-            // Auth Listener
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
                     onValue(ref(db, 'users/' + user.uid), (snap) => {
                         if (snap.exists()) {
                             currentUserData = snap.val();
-                            navigateTo('dashboard');
-                        } else {
-                            navigateTo('landing');
+                            renderDashboard();
                         }
                         updateNavbar();
-                    }, { onlyOnce: true });
+                    });
                 } else {
                     currentUser = null;
                     currentUserData = null;
@@ -134,18 +196,9 @@
                 }
             });
 
-            // Public Needs Stream
             onValue(ref(db, 'requests'), (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
-                    publicRequests = Object.keys(data)
-                        .map(k => ({ id: k, ...data[k] }))
-                        .filter(r => r.status === 'pending' || r.status === 'approved')
-                        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-                        .slice(0, 6);
-                } else {
-                    publicRequests = [];
-                }
+                publicRequests = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })).filter(r => r.status === 'pending' || r.status === 'approved').sort((a,b) => b.createdAt - a.createdAt).slice(0, 6) : [];
                 if (document.getElementById('live-radar')) renderLiveRadar();
             });
         }
@@ -154,78 +207,105 @@
             const container = document.getElementById('nav-actions');
             if (currentUser && currentUserData) {
                 container.innerHTML = `
-                    <div class="hidden md:flex flex-col items-end mr-2">
-                        <span class="text-[9px] font-black text-blue-500 uppercase leading-none">${currentUserData.role}</span>
-                        <span class="text-sm font-bold text-slate-800">${currentUserData.name}</span>
+                    <div class="flex items-center gap-6 leading-none italic">
+                        <div class="hidden md:flex flex-col items-end mr-2 leading-none">
+                            <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest italic mb-1.5 leading-none">${currentUserData.role}</span>
+                            <span class="text-sm font-black text-slate-900 tracking-tighter leading-none">${currentUserData.name}</span>
+                        </div>
+                        <button onclick="handleSignOut()" class="p-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-2xl transition-standard shadow-sm border border-red-100 flex items-center gap-3 italic">
+                            <span class="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Exit Hub</span>
+                            <i data-lucide="power" class="w-5 h-5 italic"></i>
+                        </button>
                     </div>
-                    <button id="btn-logout" class="p-2.5 bg-slate-50 text-slate-400 hover:text-red-500 rounded-xl transition-colors">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
                 `;
-                document.getElementById('btn-logout').onclick = () => signOut(auth);
             } else {
                 container.innerHTML = `
-                    <button onclick="navigateTo('auth', 'login')" class="text-sm font-bold text-slate-500 px-4 py-2 hover:bg-slate-100 rounded-xl">Login</button>
-                    <button onclick="navigateTo('auth', 'signup')" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-blue-100 btn-hover">Join Network</button>
+                    <div class="flex items-center gap-4 italic leading-none">
+                        <button onclick="openAuthModal()" class="text-[11px] font-black text-slate-400 px-6 py-2 hover:text-blue-700 transition-standard tracking-[0.2em] uppercase italic italic">Staff Access</button>
+                        <button onclick="openDonateModal()" class="bg-rose-600 text-white px-8 py-3 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl hover:bg-rose-700 transition-all hover:scale-105 active:scale-95 italic italic italic">Donate</button>
+                    </div>
                 `;
             }
             lucide.createIcons();
         }
 
-        function navigateTo(view, mode = null) {
+        function handleSignOut() {
+            signOut(auth).then(() => navigateTo('landing'));
+        }
+
+        function navigateTo(view) {
             if (view === 'landing') renderLanding();
-            else if (view === 'auth') renderAuth(mode);
             else if (view === 'dashboard') renderDashboard();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- LANDING PAGE ---
+        // --- HOMEPAGE RENDERER ---
 
         function renderLanding() {
             const main = document.getElementById('main-view');
             main.innerHTML = `
-                <div class="space-y-24 py-12">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                        <div class="space-y-8 text-center lg:text-left">
-                            <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
-                                <span class="w-2 h-2 bg-blue-600 rounded-full active-pulse"></span> Cebu Node Online
+                <div class="space-y-32 py-10 fade-in italic leading-none italic">
+                    <!-- HERO COMMAND HUB -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center italic">
+                        <div class="space-y-12 text-center lg:text-left italic leading-none">
+                            <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] italic leading-none">
+                                <span class="w-2.5 h-2.5 bg-blue-600 rounded-full animate-ping italic shadow-lg"></span> Regional Center Synchronized
                             </div>
-                            <h1 class="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight text-balance">
-                                Disaster Relief <br><span class="text-blue-600">Simplified.</span>
-                            </h1>
-                            <p class="text-lg text-slate-500 max-w-lg leading-relaxed mx-auto lg:mx-0 font-medium">
-                                A specialized system for Cebu Province. Real-time resource coordination between local officials, donors, and logistics providers.
+                            
+                            <div class="space-y-4">
+                                <div class="title-container leading-none italic">
+                                    <h1 class="title-text heading-hero text-slate-900 italic leading-[0.8]">Disaster Relief and</h1>
+                                    <div class="accent-bar bg-blue-600 w-full opacity-40"></div>
+                                </div><br>
+                                <div class="title-container mt-2">
+                                    <h1 class="title-text heading-hero text-blue-700 italic leading-[0.8]">Emergency Resource</h1>
+                                    <div class="accent-bar bg-blue-600 w-full opacity-40"></div>
+                                </div><br>
+                                <div class="title-container mt-2">
+                                    <h1 class="title-text heading-hero text-slate-900 italic leading-[0.8]">Allocation System</h1>
+                                    <div class="accent-bar bg-blue-600 w-full opacity-40"></div>
+                                </div>
+                            </div>
+
+                            <p class="text-xl text-slate-500 max-w-xl leading-relaxed mx-auto lg:mx-0 font-medium border-l-8 border-blue-200 pl-8 italic uppercase tracking-tighter opacity-80 leading-relaxed italic">
+                                The official digital infrastructure for provincial resource allocation. View live resource deficits across Cebu districts or contact emergency hotlines directly.
                             </p>
-                            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                                <button onclick="navigateTo('auth', 'signup')" class="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-blue-200 btn-hover">Start Deployment</button>
-                                <button onclick="document.getElementById('radar-section').scrollIntoView({behavior:'smooth'})" class="bg-white border-2 border-slate-200 px-10 py-5 rounded-2xl font-black text-slate-600 text-lg btn-hover">View Needs</button>
+                            <div class="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start pt-6 italic italic">
+                                <button onclick="openHotlines()" class="bg-blue-700 text-white px-12 py-7 rounded-[3rem] font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all italic leading-none uppercase italic">Cebu Hotlines</button>
+                                <button onclick="document.getElementById('radar-section').scrollIntoView({behavior:'smooth'})" class="bg-white border-2 border-slate-200 px-12 py-7 rounded-[3rem] font-black text-slate-600 text-xl hover:bg-slate-50 transition-all uppercase tracking-tighter italic italic italic leading-none italic">View Relief Radar</button>
                             </div>
                         </div>
                         
-                        <div class="relative cursor-pointer group" onclick="openMap()">
-                            <div class="absolute -inset-4 bg-blue-600/10 rounded-[3rem] blur-3xl opacity-50"></div>
-                            <div class="relative bg-slate-900 rounded-[3rem] aspect-video flex items-center justify-center border-4 border-white shadow-2xl overflow-hidden">
-                                <div class="text-center space-y-4 z-10 p-10">
-                                    <div class="w-20 h-20 bg-blue-500/20 rounded-[2rem] mx-auto flex items-center justify-center text-blue-400 border border-blue-500/30 animate-bounce">
-                                        <i data-lucide="map" class="w-10 h-10"></i>
-                                    </div>
-                                    <h3 class="text-white font-black text-xl">Cebu Situation Radar</h3>
-                                    <p class="text-blue-400 text-[10px] font-black uppercase tracking-[0.4em]">Expand Interactive Map</p>
+                        <div class="relative cursor-pointer group italic leading-none" onclick="openMap()">
+                            <div class="absolute -inset-10 bg-blue-600/10 rounded-[5rem] blur-3xl opacity-50 group-hover:opacity-80 transition-opacity italic italic leading-none"></div>
+                            <div class="relative bg-slate-950 rounded-[5rem] aspect-[4/3] flex items-center justify-center border-[10px] border-white shadow-2xl overflow-hidden shadow-blue-900/20 italic italic">
+                                <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/30 via-slate-950 to-slate-950 italic italic"></div>
+                                <div class="text-center space-y-6 z-10 p-12 transition-transform group-hover:scale-105 duration-500 italic italic leading-none">
+                                    <div class="w-24 h-24 bg-blue-600/20 rounded-[2.5rem] mx-auto flex items-center justify-center text-white border-2 border-blue-500/30 animate-bounce shadow-2xl italic italic"><i data-lucide="map-pinned" class="w-12 h-12 text-white italic"></i></div>
+                                    <h3 class="text-white font-black text-5xl tracking-tighter leading-none uppercase italic italic tracking-tighter italic italic italic italic">Situation Radar</h3>
+                                    <p class="text-blue-400/60 text-[11px] font-black uppercase tracking-[0.7em] mt-3 tracking-tighter italic italic italic leading-none italic italic italic">Live Heatmap Access</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <section id="radar-section" class="space-y-10 scroll-mt-24">
-                        <div class="flex flex-col md:flex-row justify-between items-end gap-4">
-                            <div>
-                                <h2 class="text-4xl font-black text-slate-800 flex items-center gap-3">
-                                    <i data-lucide="activity" class="text-red-500 active-pulse"></i> Live Relief Radar
-                                </h2>
-                                <p class="text-slate-500 mt-2 font-medium">Real-time urgent needs validated by barangay officers</p>
+                    <!-- LIVE RADAR FEED -->
+                    <section id="radar-section" class="space-y-16 scroll-mt-28 italic leading-none italic italic">
+                        <div class="flex flex-col md:flex-row justify-between items-end gap-10 border-b-8 border-slate-200 pb-16 leading-none italic italic italic">
+                            <div class="space-y-4 text-center md:text-left leading-none italic italic italic italic">
+                                <div class="title-container mb-4 italic leading-none italic">
+                                    <h2 class="title-text text-7xl font-black text-slate-950 italic italic italic flex items-center gap-6 italic leading-none italic italic">
+                                        <i data-lucide="zap" class="text-orange-500 fill-orange-500 w-12 h-12 italic italic italic italic italic"></i> Relief Radar
+                                    </h2>
+                                    <div class="accent-bar bg-orange-500 w-full opacity-40 italic leading-none"></div>
+                                </div>
+                                <p class="text-slate-500 font-bold text-xl tracking-tight uppercase tracking-widest mt-12 italic italic italic italic italic italic italic">Verified resource deficits reported by authenticated Hub officers</p>
+                            </div>
+                            <div class="px-8 py-4 bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-xl text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-4 italic tracking-widest leading-none italic italic italic italic">
+                                <span class="w-3 h-3 bg-emerald-500 rounded-full active-pulse shadow-lg italic italic italic italic italic"></span> Regional Sync Active
                             </div>
                         </div>
-                        <div id="live-radar" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                        <div id="live-radar" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 italic italic italic"></div>
                     </section>
                 </div>
             `;
@@ -237,325 +317,269 @@
             const container = document.getElementById('live-radar');
             if (!container) return;
             if (publicRequests.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 text-slate-400 font-bold italic tracking-tight">No active needs reported.</div>`;
+                container.innerHTML = `<div class="col-span-full py-28 text-center bg-white rounded-[4rem] border-2 border-dashed border-slate-200 text-slate-300 uppercase font-black italic text-2xl tracking-tighter opacity-50 italic tracking-widest">Hub Status: Optimal</div>`;
                 return;
             }
             container.innerHTML = publicRequests.map(req => `
-                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 border-l-8 border-l-orange-500 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2">
-                    <p class="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2">${req.barangay}</p>
-                    <h4 class="font-black text-2xl tracking-tight text-slate-900 mb-1">${req.items}</h4>
-                    <p class="text-sm text-slate-500 italic mb-8 line-clamp-2 leading-relaxed">"${req.note || 'Assist now.'}"</p>
-                    <button onclick="navigateTo('auth', 'signup')" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase hover:bg-blue-600 transition-colors">Pledge Support</button>
+                <div class="bg-white p-12 rounded-[5rem] border border-slate-100 border-t-[16px] border-t-orange-500 shadow-sm hover:shadow-2xl transition-standard hover:-translate-y-5 relative group italic leading-none italic italic italic italic">
+                    <p class="text-[11px] font-black text-orange-600 uppercase tracking-[0.4em] mb-4 italic tracking-tighter flex items-center gap-3 italic italic">
+                        <i data-lucide="map-pin" class="w-4 h-4 italic italic"></i> ${req.barangay} Sector
+                    </p>
+                    <h4 class="font-black text-5xl tracking-tighter text-slate-900 leading-[0.9] italic uppercase italic italic tracking-tighter leading-none italic italic italic italic">${req.items}</h4>
+                    <p class="text-slate-400 italic mb-16 line-clamp-3 text-lg leading-relaxed font-bold mt-8 tracking-tight italic tracking-widest opacity-80 leading-relaxed italic italic italic italic">"${req.note || 'Urgent support required.'}"</p>
+                    <button onclick="openDonateModal()" class="w-full py-7 bg-rose-600 text-white rounded-[3rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl active:scale-95 italic italic italic tracking-widest italic italic italic italic italic">Support Area</button>
                 </div>
             `).join('');
+            lucide.createIcons();
         }
 
-        // --- AUTH ---
+        // --- PUBLIC DONATION PORTAL ---
 
-        function renderAuth(mode) {
-            const main = document.getElementById('main-view');
-            main.innerHTML = `
-                <div class="max-w-md mx-auto py-12">
-                    <div class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
-                        <h2 class="text-3xl font-black text-slate-900 text-center mb-10">${mode === 'login' ? 'System Login' : 'Create Account'}</h2>
-                        <form id="auth-form" class="space-y-5">
-                            ${mode === 'signup' ? `
-                                <input id="auth-name" placeholder="Full Name" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-4 focus:ring-blue-500/10 font-medium" required>
-                                <select id="auth-role" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold">
-                                    ${Object.values(ROLES).map(r => `<option value="${r}">${r}</option>`).join('')}
-                                </select>
-                                <select id="auth-location" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 font-bold">
-                                    ${CEBU_LOCATIONS.cities.concat(CEBU_LOCATIONS.municipalities).map(l => `<option value="${l}">${l}</option>`).join('')}
-                                </select>
-                            ` : ''}
-                            <input id="auth-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-4 focus:ring-blue-500/10 font-medium" required>
-                            <input id="auth-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none focus:ring-4 focus:ring-blue-500/10 font-medium" required>
-                            <button type="submit" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest mt-4 shadow-xl">
-                                ${mode === 'login' ? 'Authorize Access' : 'Register Profile'}
-                            </button>
-                        </form>
-                        <button onclick="navigateTo('auth', '${mode === 'login' ? 'signup' : 'login'}')" class="w-full text-center text-xs font-black text-blue-600 mt-8 hover:underline">
-                            ${mode === 'login' ? "Request new access" : "Already registered? Login"}
-                        </button>
+        window.openDonateModal = () => {
+            const modal = document.getElementById('modal-container');
+            modal.classList.remove('hide');
+            document.getElementById('modal-body').innerHTML = `
+                <div class="p-8 sm:p-12 relative shadow-2xl leading-none italic text-center modal-scrollable italic">
+                    <button onclick="closeModal()" class="absolute top-8 right-8 p-4 hover:bg-slate-100 rounded-full transition-colors leading-none italic italic italic italic italic"><i data-lucide="x" class="w-8 h-8 italic"></i></button>
+                    
+                    <div class="relative inline-block mb-10 italic mt-8">
+                        <h3 class="text-6xl sm:text-8xl font-black text-slate-900 tracking-tighter uppercase leading-none italic italic">Donate</h3>
+                        <div class="accent-bar bg-rose-600 w-full opacity-40 italic italic"></div>
+                    </div>
+                    
+                    <p class="text-slate-400 text-[12px] font-black uppercase mb-16 tracking-[1em] italic leading-none italic opacity-70 italic italic italic italic">Direct Provincial Support Channels</p>
+                    
+                    <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 text-left italic mb-16">
+                        <!-- Relief Supplies -->
+                        <div class="card-cmd p-10 border-t-[20px] border-t-blue-600 flex flex-col italic">
+                            <div class="space-y-4 mb-10 leading-none">
+                                <h4 class="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Relief Supplies</h4>
+                                <p class="text-slate-500 font-bold uppercase text-[10px] tracking-widest opacity-60 italic">Physical Item Deployment</p>
+                            </div>
+                            
+                            <div class="p-8 bg-blue-50 rounded-[3rem] border-l-[10px] border-l-blue-600 italic leading-relaxed mb-10">
+                                <h5 class="text-blue-700 font-black text-[10px] uppercase mb-4 italic">Hub Protocol</h5>
+                                <p class="text-sm font-bold text-slate-600 italic">"Deliver supplies to these authorized stations for Provincial Redistribution."</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <h5 class="text-[10px] font-black uppercase text-slate-400 tracking-widest italic leading-none italic">Drop-off Hubs</h5>
+                                <ul class="space-y-5 font-black text-base text-slate-800 uppercase italic tracking-tighter italic">
+                                    <li class="flex items-center gap-4"><i data-lucide="map-pin" class="w-5 h-5 text-blue-600 italic"></i> Capitol Hub (Center)</li>
+                                    <li class="flex items-center gap-4"><i data-lucide="map-pin" class="w-5 h-5 text-blue-600 italic"></i> Mandaue Command Station</li>
+                                    <li class="flex items-center gap-4"><i data-lucide="map-pin" class="w-5 h-5 text-blue-600 italic"></i> Talisay Hub Station</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Financial Aid -->
+                        <div class="card-cmd p-10 border-t-[20px] border-t-rose-600 flex flex-col italic">
+                             <div class="space-y-4 mb-8 leading-none">
+                                <h4 class="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Financial Aid</h4>
+                                <p class="text-slate-500 font-bold uppercase text-[10px] tracking-widest opacity-60 italic">Direct Digital Support</p>
+                            </div>
+                            
+                            <div class="bg-slate-950 p-8 rounded-[3rem] text-white space-y-6 shadow-2xl relative overflow-hidden italic leading-none mb-10">
+                                <div class="absolute top-0 right-0 p-6 opacity-20 italic"><i data-lucide="landmark" class="w-20 h-20 italic"></i></div>
+                                <p class="text-[9px] font-black uppercase tracking-[0.4em] opacity-60 italic">Official Trust Account</p>
+                                <p class="text-2xl font-black tracking-tighter italic uppercase text-blue-300 italic">CEBU RELIEF TRUST</p>
+                                <p class="text-3xl font-mono font-black text-emerald-400 mt-6 italic">032-99-88-11</p>
+                            </div>
+                            
+                            <div class="flex flex-col items-center gap-6 mt-auto">
+                                <div class="qr-wrapper flex items-center justify-center p-2 bg-white">
+                                    <!-- PASTE YOUR GCASH QR IMAGE LINK IN THE SRC BELOW -->
+                                    <img src="https://placehold.co/400x400/1d4ed8/ffffff?text=Your+GCash+QR" class="w-full h-full object-contain rounded-xl" alt="GCash QR Hub">
+                                </div>
+                                <div class="text-center italic mt-4">
+                                    <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest italic mb-2">Scan Official GCash Hub</p>
+                                    <p class="text-blue-700 font-black text-sm uppercase italic">Trusted Provincial Channel</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
-            document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, mode);
-        }
+            lucide.createIcons();
+        };
 
-        async function handleAuth(e, mode) {
+        // --- STAFF AUTHORIZATION HUB ---
+
+        window.openAuthModal = (mode = 'login') => {
+            const modal = document.getElementById('modal-container');
+            modal.classList.remove('hide');
+            document.getElementById('modal-body').innerHTML = `
+                <div class="p-16 sm:p-24 relative shadow-2xl leading-none italic text-center modal-scrollable italic">
+                    <button onclick="closeModal()" class="absolute top-12 right-12 p-5 hover:bg-slate-100 rounded-full transition-colors leading-none italic italic italic italic italic"><i data-lucide="x" class="w-8 h-8 italic"></i></button>
+                    <div class="relative inline-block mb-12 italic">
+                        <h3 class="text-7xl font-black text-slate-900 tracking-tighter uppercase leading-none italic italic">${mode === 'login' ? 'Staff Login' : 'Registration'}</h3>
+                        <div class="accent-bar bg-blue-600 w-full opacity-40 italic"></div>
+                    </div>
+                    
+                    <form id="auth-form-internal" class="max-w-xl mx-auto space-y-8 text-left mt-10 italic leading-none">
+                        ${mode === 'signup' ? `
+                            <div class="space-y-2 italic leading-none italic"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 opacity-60">Identity Full Name</label>
+                            <input id="in-name" placeholder="John Dela Cruz" class="w-full p-6 rounded-3xl bg-slate-50 border-2 border-slate-200 outline-none font-bold text-slate-800 text-lg shadow-inner italic" required></div>
+                            
+                            <div class="space-y-2 italic leading-none italic"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 opacity-60">System Role Hub</label>
+                            <select id="in-role" class="w-full p-6 rounded-3xl bg-slate-50 border-2 border-slate-200 outline-none font-bold text-slate-700 text-sm shadow-inner italic appearance-none cursor-pointer">
+                                <option value="${STAFF_ROLES.ADMIN}">${STAFF_ROLES.ADMIN}</option>
+                                <option value="${STAFF_ROLES.BARANGAY}">${STAFF_ROLES.BARANGAY}</option>
+                                <option value="${STAFF_ROLES.LOGISTICS}">${STAFF_ROLES.LOGISTICS}</option>
+                            </select></div>
+
+                            <div class="space-y-2 italic leading-none italic"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 opacity-60">Designated Station Hub</label>
+                            <select id="in-loc" class="w-full p-6 rounded-3xl bg-slate-50 border-2 border-slate-200 outline-none font-bold text-slate-700 text-sm shadow-inner italic appearance-none cursor-pointer">
+                                ${CEBU_LOCATIONS.cities.concat(CEBU_LOCATIONS.municipalities).map(l => `<option value="${l}">${l}</option>`).join('')}
+                            </select></div>
+                        ` : ''}
+                        
+                        <div class="space-y-2 italic leading-none italic"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 opacity-60 italic">Official Email Hub</label>
+                        <input id="in-email" type="email" placeholder="staff@cebu-relief.gov" class="w-full p-6 rounded-3xl bg-slate-50 border-2 border-slate-200 outline-none font-bold text-slate-800 text-lg shadow-inner italic" required></div>
+                        
+                        <div class="space-y-2 italic leading-none italic"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 opacity-60 italic">Command Hub Password</label>
+                        <input id="in-pass" type="password" placeholder="••••••••" class="w-full p-6 rounded-3xl bg-slate-50 border-2 border-slate-200 outline-none font-bold text-slate-800 text-lg shadow-inner italic" required></div>
+
+                        <button type="submit" class="w-full bg-blue-700 text-white py-8 rounded-[3rem] font-black text-[12px] uppercase tracking-[0.5em] shadow-xl hover:bg-blue-800 transition-all active:scale-95 italic">
+                            ${mode === 'login' ? 'Authorize Gateway' : 'Establish Hub identity'}
+                        </button>
+                    </form>
+
+                    <button onclick="openAuthModal('${mode === 'login' ? 'signup' : 'login'}')" class="w-full text-center text-[11px] font-black text-blue-500 mt-12 hover:underline uppercase tracking-[0.3em] italic italic italic">
+                        ${mode === 'login' ? "Initialize New District Record" : "Registered Hub Staff? Login"}
+                    </button>
+                </div>
+            `;
+            document.getElementById('auth-form-internal').onsubmit = (e) => handleGatewayAuth(e, mode);
+            lucide.createIcons();
+        };
+
+        async function handleGatewayAuth(e, mode) {
             e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-pass').value;
+            const email = document.getElementById('in-email').value;
+            const pass = document.getElementById('in-pass').value;
             try {
                 if (mode === 'signup') {
-                    const name = document.getElementById('auth-name').value;
-                    const role = document.getElementById('auth-role').value;
-                    const location = document.getElementById('auth-location').value;
+                    const name = document.getElementById('in-name').value;
+                    const role = document.getElementById('in-role').value;
+                    const location = document.getElementById('in-loc').value;
                     const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                    await set(ref(db, 'users/' + cred.user.uid), { uid: cred.user.uid, name, role, location, createdAt: serverTimestamp() });
+                    const userData = { uid: cred.user.uid, name, role, location, approved: false, createdAt: Date.now() };
+                    await set(ref(db, 'users/' + cred.user.uid), userData);
+                    currentUserData = userData;
                 } else {
                     await signInWithEmailAndPassword(auth, email, pass);
                 }
-            } catch (err) { alert(err.message); }
+                closeModal();
+            } catch (err) { alert("Authorization Error: " + err.message); }
         }
 
-        // --- DASHBOARD ROUTER ---
+        // --- SHARED MODALS ---
 
-        function renderDashboard() {
-            const main = document.getElementById('main-view');
-            main.innerHTML = `
-                <div class="space-y-10">
-                    <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 flex flex-col md:flex-row items-center gap-8 shadow-sm">
-                        <div class="w-20 h-20 bg-blue-600 text-white rounded-[2rem] flex items-center justify-center text-3xl font-black shadow-xl shadow-blue-200">${currentUserData.name.charAt(0)}</div>
-                        <div class="flex-1 text-center md:text-left">
-                            <h2 class="text-3xl font-black text-slate-900 tracking-tight">${currentUserData.name}</h2>
-                            <p class="text-blue-500 font-black text-[10px] uppercase tracking-[0.4em] mt-1">${currentUserData.role} • ${currentUserData.location}</p>
-                        </div>
-                        <div class="px-5 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase flex items-center gap-2">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full active-pulse"></span> Secured Connection
-                        </div>
-                    </div>
-                    <div id="dashboard-content" class="min-h-[500px]"></div>
-                </div>
-            `;
-            if (currentUserData.role === ROLES.BARANGAY) renderBarangay();
-            else if (currentUserData.role === ROLES.ADMIN) renderAdmin();
-            else if (currentUserData.role === ROLES.LOGISTICS) renderLogistics();
-            else if (currentUserData.role === ROLES.DONOR) renderDonor();
-        }
-
-        // --- DASHBOARD MODULES ---
-
-        function renderBarangay() {
-            const container = document.getElementById('dashboard-content');
-            container.innerHTML = `
-                <div class="space-y-8">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Barangay Relief Hub</h3>
-                        <div class="flex gap-4">
-                            <button onclick="openBeneModal()" class="bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl btn-hover">Add Beneficiary</button>
-                            <button onclick="openRequestModal()" class="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl btn-hover">New Request</button>
-                        </div>
-                    </div>
-                    <div id="barangay-table" class="bg-white p-10 rounded-[3rem] border border-slate-100 overflow-x-auto shadow-sm"></div>
-                </div>
-            `;
-            onValue(ref(db, 'requests'), (snapshot) => {
-                const data = snapshot.val();
-                const reqs = data ? Object.keys(data).map(k => ({id: k, ...data[k]})).filter(r => r.barangay === currentUserData.location) : [];
-                document.getElementById('barangay-table').innerHTML = `
-                    <table class="w-full text-left">
-                        <thead><tr class="text-slate-400 text-[10px] font-black uppercase border-b border-slate-50"><th class="pb-5">Resource Type</th><th class="pb-5">Logistics Status</th><th class="pb-5">Action</th></tr></thead>
-                        <tbody>${reqs.map(r => `
-                            <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                                <td class="py-6"><p class="font-black text-slate-800 text-lg">${r.items}</p><p class="text-xs text-slate-400 mt-1">${r.note || 'Official Request'}</p></td>
-                                <td><span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase ${r.status==='pending'?'bg-amber-100 text-amber-700':r.status==='dispatched'?'bg-blue-100 text-blue-700':'bg-emerald-100 text-emerald-700'}">${r.status}</span></td>
-                                <td>${r.status==='dispatched'?`<button onclick="updateStatus('${r.id}', 'delivered')" class="text-blue-600 font-black text-xs hover:underline">Confirm Receipt</button>`:'-'}</td>
-                            </tr>
-                        `).join('') || '<tr><td colspan="3" class="py-20 text-center text-slate-300 italic">No request history found.</td></tr>'}</tbody>
-                    </table>
-                `;
-            });
-            lucide.createIcons();
-        }
-
-        function renderAdmin() {
-            const container = document.getElementById('dashboard-content');
-            container.innerHTML = `
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                        <h4 class="font-black text-xl text-slate-800 mb-8 flex items-center gap-3"><i data-lucide="bell" class="text-blue-500"></i> Requests for Approval</h4>
-                        <div id="admin-list" class="space-y-4 max-h-[500px] overflow-y-auto pr-2"></div>
-                    </div>
-                    <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                        <h4 class="font-black text-xl text-slate-800 mb-8 flex items-center gap-3"><i data-lucide="bar-chart-3" class="text-emerald-500"></i> Allocation Summary</h4>
-                        <canvas id="adminChart" height="250"></canvas>
-                    </div>
-                </div>
-            `;
-            onValue(ref(db, 'requests'), (snap) => {
-                const data = snap.val();
-                const reqs = data ? Object.keys(data).map(k => ({id:k, ...data[k]})) : [];
-                const pending = reqs.filter(r => r.status === 'pending');
-                document.getElementById('admin-list').innerHTML = pending.map(r => `
-                    <div class="p-6 bg-slate-50 rounded-3xl flex justify-between items-center hover:bg-white border border-transparent hover:border-slate-100 transition-all">
-                        <div><p class="font-black text-sm text-slate-800">${r.barangay}</p><p class="text-xs text-slate-500">${r.items}</p></div>
-                        <button onclick="updateStatus('${r.id}', 'approved')" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700">Approve</button>
-                    </div>
-                `).join('') || '<p class="text-center py-20 text-slate-400 font-bold italic">Approvals queue clear.</p>';
-
-                const labels = CEBU_LOCATIONS.cities.concat(CEBU_LOCATIONS.municipalities);
-                const chartData = labels.map(l => reqs.filter(r => r.barangay === l).length);
-                const ctx = document.getElementById('adminChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels, datasets: [{ label: 'Total Volume', data: chartData, backgroundColor: '#3b82f6', borderRadius: 12 }] },
-                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } } } }
-                });
-            });
-            lucide.createIcons();
-        }
-
-        function renderLogistics() {
-            const container = document.getElementById('dashboard-content');
-            container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm h-fit">
-                        <h4 class="font-black text-xl text-slate-800 mb-8 flex items-center gap-3"><i data-lucide="package" class="text-blue-500"></i> Dispatch Pipeline</h4>
-                        <div id="logi-list" class="space-y-4"></div>
-                    </div>
-                    <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm h-fit">
-                        <h4 class="font-black text-xl text-slate-800 mb-8 flex items-center gap-3"><i data-lucide="truck" class="text-orange-500"></i> Global In-Transit</h4>
-                        <div id="logi-transit" class="space-y-4"></div>
-                    </div>
-                </div>
-            `;
-            onValue(ref(db, 'requests'), (snap) => {
-                const data = snap.val();
-                const reqs = data ? Object.keys(data).map(k => ({id:k, ...data[k]})) : [];
-                document.getElementById('logi-list').innerHTML = reqs.filter(r => r.status==='approved').map(r => `
-                    <div class="p-6 bg-blue-50/50 rounded-3xl border border-blue-100">
-                        <p class="font-black text-slate-800">${r.barangay}</p><p class="text-xs text-slate-500 mt-1 mb-5">${r.items}</p>
-                        <button onclick="updateStatus('${r.id}', 'dispatched')" class="w-full bg-blue-600 text-white py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-lg">Assign Dispatch</button>
-                    </div>
-                `).join('') || '<p class="text-center py-20 text-slate-300 font-bold italic">No approved items for dispatch.</p>';
-
-                document.getElementById('logi-transit').innerHTML = reqs.filter(r => r.status==='dispatched').map(r => `
-                    <div class="p-6 bg-orange-50/50 border border-orange-100 rounded-3xl relative overflow-hidden">
-                        <p class="font-black text-slate-800">${r.barangay}</p><p class="text-xs text-slate-500 mt-1">${r.items}</p>
-                        <div class="flex items-center gap-1 text-[9px] text-orange-600 font-black uppercase mt-4 tracking-widest"><i data-lucide="activity" class="w-3 h-3"></i> Tracking Active</div>
-                    </div>
-                `).join('') || '<p class="text-center py-20 text-slate-300 font-bold italic">Fleet idle.</p>';
-            });
-            lucide.createIcons();
-        }
-
-        function renderDonor() {
-            const container = document.getElementById('dashboard-content');
-            container.innerHTML = `
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm h-fit">
-                        <h4 class="font-black text-xl text-slate-800 mb-8">Pledge Resource</h4>
-                        <div class="space-y-6">
-                            <input id="don-item" placeholder="Relief Item (e.g. 50 Water Packs)" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-medium">
-                            <input id="don-qty" type="number" placeholder="Quantity" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-medium">
-                            <button onclick="submitDonation()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-blue-700 transition-all tracking-widest">Confirm Pledge</button>
-                        </div>
-                    </div>
-                    <div class="lg:col-span-2 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                        <h4 class="font-black text-xl text-slate-800 mb-8">My Pledge Stream</h4>
-                        <div id="donor-history" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-                    </div>
-                </div>
-            `;
-            onValue(ref(db, 'donations'), (snap) => {
-                const data = snap.val();
-                const dons = data ? Object.keys(data).map(k => ({id:k, ...data[k]})).filter(d => d.donorId === currentUser.uid) : [];
-                document.getElementById('donor-history').innerHTML = dons.map(d => `
-                    <div class="p-6 bg-slate-50 rounded-3xl flex items-center gap-5">
-                        <div class="p-3 bg-white rounded-2xl shadow-sm text-red-500"><i data-lucide="heart" class="w-5 h-5"></i></div>
-                        <div><p class="font-black text-slate-800 text-lg leading-none">${d.item}</p><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">QTY: ${d.quantity}</p></div>
-                    </div>
-                `).join('') || '<p class="text-center py-20 text-slate-300 font-bold italic col-span-full">Your stream is empty. Pledge now.</p>';
-            });
-            lucide.createIcons();
-        }
-
-        // --- HELPERS ---
-
-        window.updateStatus = async (id, status) => {
-            await update(ref(db, 'requests/' + id), { status });
-        };
-
-        window.openRequestModal = () => {
+        window.openHotlines = () => {
             const modal = document.getElementById('modal-container');
-            modal.innerHTML = `
-                <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
-                    <div class="bg-white w-full max-w-md rounded-[3.5rem] p-12 shadow-2xl relative">
-                        <h3 class="text-3xl font-black mb-10 text-slate-900">Broadcast Need</h3>
-                        <input id="mod-items" placeholder="Resource Name?" class="w-full p-5 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-medium mb-4">
-                        <textarea id="mod-notes" placeholder="Reasoning..." class="w-full p-5 rounded-2xl bg-slate-50 border border-slate-200 outline-none h-28 font-medium"></textarea>
-                        <div class="flex gap-4 pt-8">
-                            <button onclick="closeModal()" class="flex-1 text-slate-400 font-black uppercase text-xs">Cancel</button>
-                            <button onclick="submitRequest()" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl active:scale-95 transition-all">Submit</button>
+            modal.classList.remove('hide');
+            document.getElementById('modal-body').innerHTML = `
+                <div class="p-20 relative shadow-2xl leading-none italic text-center modal-scrollable italic italic">
+                    <button onclick="closeModal()" class="absolute top-12 right-12 p-6 hover:bg-slate-100 rounded-full transition-colors leading-none italic italic italic italic italic italic"><i data-lucide="x" class="w-10 h-10 italic"></i></button>
+                    <div class="relative inline-block mb-16 italic italic italic">
+                        <h3 class="text-7xl font-black text-slate-900 tracking-tighter mb-4 uppercase leading-none italic underline decoration-blue-600 decoration-8 underline-offset-[15px] italic italic">Direct</h3>
+                        <div class="accent-bar bg-blue-600 w-full opacity-40 italic italic"></div>
+                    </div>
+                    <p class="text-blue-600 font-black uppercase text-[11px] tracking-[0.5em] mb-16 italic italic italic italic italic">Authorized Provincial Emergency Channels Hub</p>
+                    <div class="space-y-12 text-left italic italic italic">
+                        <div class="p-10 bg-blue-700 text-white rounded-[4.5rem] flex justify-between items-center shadow-2xl shadow-blue-300 italic italic">
+                            <div><p class="text-[10px] font-black uppercase tracking-[0.3em] opacity-70 italic leading-none italic italic italic">PDRRMO CEBU HUB</p><p class="text-4xl font-black italic mt-5 tracking-tighter leading-none italic italic italic">(032) 255-0046</p></div>
+                            <div class="w-16 h-16 bg-white/20 rounded-3xl flex items-center justify-center italic leading-none italic italic italic"><i data-lucide="phone-call" class="w-8 h-8 italic italic italic italic"></i></div>
+                        </div>
+                        <div class="p-10 bg-slate-950 text-white rounded-[4.5rem] flex justify-between items-center shadow-2xl italic italic leading-none italic italic italic">
+                            <div><p class="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 italic leading-none italic italic italic italic">RED CROSS HUB</p><p class="text-4xl font-black italic mt-5 tracking-tighter leading-none italic italic italic italic">(032) 253-4611</p></div>
+                            <div class="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center italic leading-none italic italic italic italic"><i data-lucide="cross" class="w-8 h-8 italic italic italic italic italic"></i></div>
+                        </div>
+                        <div class="p-10 bg-orange-600 text-white rounded-[4.5rem] flex justify-between items-center shadow-2xl italic italic leading-none italic italic italic">
+                            <div><p class="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 italic leading-none italic italic italic italic italic">BFP FIRE COMMAND</p><p class="text-4xl font-black italic mt-5 tracking-tighter leading-none italic italic italic italic italic">(032) 256-0543</p></div>
+                            <div class="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center italic leading-none italic italic italic italic italic"><i data-lucide="flame" class="w-8 h-8 italic italic italic italic italic italic"></i></div>
                         </div>
                     </div>
-                </div>
-            `;
-            modal.classList.remove('hide');
-        };
-
-        window.openBeneModal = () => {
-            const modal = document.getElementById('modal-container');
-            modal.innerHTML = `
-                <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
-                    <div class="bg-white w-full max-w-md rounded-[3.5rem] p-12 shadow-2xl relative">
-                        <h3 class="text-2xl font-black mb-8 text-slate-800">New Beneficiary</h3>
-                        <input id="bene-name" placeholder="Full Name of Head of Household" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none mb-4 font-medium">
-                        <input id="bene-size" type="number" placeholder="Household Size" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 outline-none font-medium mb-8">
-                        <div class="flex gap-4">
-                            <button onclick="closeModal()" class="flex-1 text-slate-400 font-black uppercase text-[10px]">Cancel</button>
-                            <button onclick="saveBene()" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-xl active:scale-95 transition-all">Register</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            modal.classList.remove('hide');
-        };
-
-        window.submitRequest = async () => {
-            const items = document.getElementById('mod-items').value;
-            const note = document.getElementById('mod-notes').value;
-            if (!items) return;
-            await push(ref(db, 'requests'), { items, note, barangay: currentUserData.location, status: 'pending', createdAt: serverTimestamp() });
-            closeModal();
-        };
-
-        window.saveBene = async () => {
-            const name = document.getElementById('bene-name').value;
-            const size = document.getElementById('bene-size').value;
-            if (!name) return;
-            await push(ref(db, 'beneficiaries'), { name, size, location: currentUserData.location, createdAt: serverTimestamp() });
-            closeModal();
-        };
-
-        window.submitDonation = async () => {
-            const item = document.getElementById('don-item').value;
-            const quantity = document.getElementById('don-qty').value;
-            if (!item || !quantity) return;
-            await push(ref(db, 'donations'), { donorId: currentUser.uid, donorName: currentUserData.name, item, quantity, createdAt: serverTimestamp() });
-            document.getElementById('don-item').value = ''; document.getElementById('don-qty').value = '';
+                </div>`;
+            lucide.createIcons();
         };
 
         window.openMap = () => {
             const modal = document.getElementById('modal-container');
             const allLocations = [...CEBU_LOCATIONS.cities, ...CEBU_LOCATIONS.municipalities];
-            modal.innerHTML = `
-                <div class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6">
-                    <div class="bg-white w-full max-w-4xl rounded-[4rem] p-12 relative shadow-2xl text-center">
-                        <button onclick="closeModal()" class="absolute top-10 right-10 p-3 hover:bg-slate-50 rounded-full transition-colors"><i data-lucide="x"></i></button>
-                        <h3 class="text-4xl font-black mb-12 tracking-tight text-slate-900">Cebu Situation Radar</h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                            ${allLocations.map(l => {
-                                const hasReq = publicRequests.some(r => r.barangay === l);
-                                return `<div class="p-5 border rounded-[2.5rem] transition-all flex flex-col items-center justify-center ${hasReq?'bg-red-50 border-red-200 animate-pulse scale-[1.05] shadow-lg shadow-red-100':'bg-white border-slate-100 opacity-60'}">
-                                    <div class="w-3 h-3 rounded-full mb-3 ${hasReq?'bg-red-500':'bg-emerald-500'}"></div>
-                                    <p class="text-[10px] font-black uppercase text-slate-900 leading-none">${l}</p>
-                                    <p class="text-[8px] font-black uppercase mt-1 tracking-widest ${hasReq?'text-red-600':'text-emerald-600'}">${hasReq?'Urgent':'Stable'}</p>
-                                </div>`;
-                            }).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
             modal.classList.remove('hide');
+            document.getElementById('modal-body').innerHTML = `
+                <div class="p-20 relative shadow-2xl leading-none italic text-center modal-scrollable italic italic italic italic">
+                    <button onclick="closeModal()" class="absolute top-12 right-12 p-6 hover:bg-slate-100 rounded-full transition-colors z-20 leading-none italic italic italic italic italic italic"><i data-lucide="x" class="w-10 h-10 italic"></i></button>
+                    <div class="relative inline-block mb-16 italic italic italic italic">
+                        <h3 class="text-8xl font-black text-slate-900 tracking-tighter mb-4 uppercase leading-none italic underline decoration-rose-500 decoration-8 underline-offset-[15px] italic italic italic italic italic">Radar</h3>
+                        <div class="accent-bar bg-rose-600 w-full opacity-40 italic italic italic italic"></div>
+                    </div>
+                    <p class="text-slate-400 font-black uppercase text-[12px] tracking-[0.6em] mb-20 italic italic leading-none italic italic italic italic">Provincial Deficit Telemetry Mapping Hub Hub</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-8 italic leading-none italic italic italic italic">
+                        ${allLocations.map(l => {
+                            const hasReq = publicRequests.some(r => r.barangay === l);
+                            return `<div class="p-10 border rounded-[4rem] flex flex-col items-center justify-center transition-all ${hasReq?'bg-rose-50 border-rose-200 animate-pulse scale-[1.05] shadow-2xl shadow-rose-200/50':'bg-white border-slate-100 opacity-40'} italic leading-none italic italic italic italic">
+                                <div class="w-6 h-6 rounded-full mb-6 ${hasReq?'bg-rose-600 shadow-xl italic':'bg-emerald-500 shadow-lg italic'} italic leading-none italic italic italic italic"></div>
+                                <p class="text-[12px] font-black uppercase text-slate-900 leading-none text-center italic tracking-tighter italic italic italic italic italic">${l}</p>
+                                <p class="text-[9px] font-black uppercase mt-3 tracking-[0.2em] ${hasReq?'text-rose-600':'text-emerald-600'} italic italic italic italic italic italic">${hasReq?'CRITICAL':'OPTIMAL'}</p>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
             lucide.createIcons();
         };
 
+        window.openProfileEdit = () => {
+            const modal = document.getElementById('modal-container');
+            const locations = CEBU_LOCATIONS.cities.concat(CEBU_LOCATIONS.municipalities);
+            modal.classList.remove('hide');
+            document.getElementById('modal-body').innerHTML = `
+                <div class="p-24 relative shadow-2xl leading-none italic text-center italic italic italic italic italic italic">
+                    <button onclick="closeModal()" class="absolute top-12 right-12 p-6 hover:bg-slate-100 rounded-full transition-colors italic leading-none italic italic italic italic italic italic"><i data-lucide="x" class="w-10 h-10 italic"></i></button>
+                    <div class="relative inline-block mb-16 italic italic italic italic italic italic">
+                        <h3 class="text-[9rem] font-black text-slate-900 tracking-tighter mb-4 italic uppercase leading-none italic underline decoration-blue-600 decoration-[15px] underline-offset-[15px] italic italic italic italic italic italic italic">Identity</h3>
+                        <div class="accent-bar bg-blue-600 w-full opacity-40 italic italic italic italic italic italic italic"></div>
+                    </div>
+                    <p class="text-slate-400 text-[12px] font-black uppercase mb-24 tracking-[1em] italic leading-none italic opacity-50 italic italic italic italic italic italic italic">Authorized Station Hub Staff modification</p>
+                    <div class="space-y-12 italic leading-none text-left max-w-4xl mx-auto italic italic italic italic italic italic italic italic">
+                        <div class="space-y-4 italic italic italic italic italic italic"><label class="text-[14px] font-black text-slate-400 uppercase tracking-[1em] ml-4 italic opacity-60 italic italic italic">Authorized Hub Staff Name</label>
+                        <input id="edit-name" value="${currentUserData.name}" class="w-full p-10 rounded-[3rem] bg-slate-50 border-4 border-blue-50 font-black text-slate-950 text-5xl outline-none italic shadow-inner italic leading-none italic italic italic italic italic"></div>
+                        
+                        <div class="space-y-4 italic italic italic italic italic italic"><label class="text-[14px] font-black text-slate-400 uppercase tracking-[1em] ml-4 italic opacity-60 italic italic italic">Hub Identity photo Link (URL)</label>
+                        <input id="edit-pic" placeholder="Paste remote Image Hub link" value="${currentUserData.profilePic || ''}" class="w-full p-10 rounded-[3rem] bg-slate-50 border-4 border-blue-50 font-black text-slate-950 text-2xl outline-none italic shadow-inner italic leading-none italic italic italic italic italic italic italic"></div>
+
+                        <div class="space-y-4 italic italic italic italic italic italic"><label class="text-[14px] font-black text-slate-400 uppercase tracking-[1em] ml-4 italic opacity-60 italic italic italic">Sector Hub Assignment</label>
+                        <select id="edit-loc" class="w-full p-10 rounded-[3rem] bg-slate-50 border-4 border-blue-50 font-black text-slate-950 text-4xl outline-none italic shadow-inner cursor-pointer italic leading-none italic italic italic italic italic italic italic">
+                            ${locations.map(l => `<option value="${l}" ${l === currentUserData.location ? 'selected' : ''}>${l}</option>`).join('')}
+                        </select></div>
+
+                        <div class="flex gap-12 pt-24 leading-none italic italic italic italic italic italic italic">
+                            <button onclick="closeModal()" class="flex-1 font-black text-slate-300 text-[18px] uppercase py-10 italic tracking-[1.2em] italic italic italic italic">Abort</button>
+                            <button onclick="saveProfile()" class="flex-1 bg-blue-700 text-white py-10 rounded-[4rem] font-black text-[18px] uppercase shadow-[0_50px_100px_-20px_rgba(29,78,216,0.7)] hover:bg-blue-800 transition-all active:scale-95 italic tracking-[1em] italic italic italic italic italic">Save Record Hub</button>
+                        </div>
+                    </div>
+                </div>`;
+            lucide.createIcons();
+        };
+
+        // SHARED HELPERS
+        window.saveProfile = async () => {
+            const name = document.getElementById('edit-name').value;
+            const loc = document.getElementById('edit-loc').value;
+            const pic = document.getElementById('edit-pic').value;
+            await update(ref(db, 'users/' + currentUser.uid), { name, location: loc, profilePic: pic });
+            currentUserData = { ...currentUserData, name, location: loc, profilePic: pic };
+            closeModal();
+        };
+
+        window.updateStatus = async (id, status) => await update(ref(db, 'requests/' + id), { status });
+        window.approveUser = async (uid) => await update(ref(db, 'users/' + uid), { approved: true });
         window.closeModal = () => document.getElementById('modal-container').classList.add('hide');
         window.navigateTo = navigateTo;
-        
+        window.setDonType = (type) => { /* Logic... */ };
+
         init();
     </script>
 </body>
