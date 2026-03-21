@@ -48,7 +48,7 @@
     </nav>
 
     <!-- MAIN VIEWPORT -->
-    <main id="main-content" class="flex-1 max-w-7xl mx-auto w-full px-6 py-10">
+    <main id="main-content" class="flex-1 max-w-7xl mx-auto w-full px-6 py-10 min-h-[60vh]">
         <!-- Views injected here -->
     </main>
 
@@ -105,11 +105,9 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Environment Variables Handling
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'dreras-cebu-hub';
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+        let db, auth;
 
         let sessionState = { active: false, profile: null };
         const HUBS = ["Cebu City", "Mandaue City", "Lapu-Lapu City", "Talisay City", "Toledo City", "Consolacion", "Liloan", "Minglanilla", "Bogo", "Carcar"];
@@ -122,14 +120,27 @@
         async function init() {
             lucide.createIcons();
             
-            try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (e) { console.error("Auth init error:", e); }
+            // Safe Initialization for External Hosting (GitHub)
+            if (typeof __firebase_config !== 'undefined') {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
 
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (e) {
+                    console.warn("Firebase initialization limited:", e.message);
+                }
+            } else {
+                console.warn("Firebase configuration missing. Real-time features disabled.");
+            }
+
+            // Restore session from localStorage if exists
             const savedSession = localStorage.getItem(`dreras_session_${appId}`);
             if (savedSession) {
                 sessionState = JSON.parse(savedSession);
@@ -232,6 +243,10 @@
 
         function initRadar() {
             const container = document.getElementById('radar-grid');
+            if (!db) {
+                container.innerHTML = `<div class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-sm">Waiting for Command Connection...</div>`;
+                return;
+            }
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), where('status', 'in', ['pending', 'dispatched']));
             onSnapshot(q, (snap) => {
                 if (snap.empty) {
@@ -361,7 +376,7 @@
                     </div>
                 </div>
             `;
-            initAdminListeners();
+            if (db) initAdminListeners();
         }
 
         function renderBarangayDash() {
@@ -386,7 +401,7 @@
                     </div>
                 </div>
             `;
-            initBarangayListeners();
+            if (db) initBarangayListeners();
         }
 
         function renderLogisticsDash() {
@@ -410,7 +425,7 @@
                     </div>
                 </div>
             `;
-            initLogisticsListeners();
+            if (db) initLogisticsListeners();
         }
 
         function initAdminListeners() {
@@ -492,11 +507,12 @@
             });
         }
 
-        window.updateRequest = async (id, status) => { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id), { status }); notify(`Status Updated to ${status}`, 'success'); };
-        window.adminAction = async (id, action) => { if (action === 'delete_req') { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id)); notify('Record Purged', 'info'); } };
+        window.updateRequest = async (id, status) => { if(!db) return; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id), { status }); notify(`Status Updated to ${status}`, 'success'); };
+        window.adminAction = async (id, action) => { if(!db) return; if (action === 'delete_req') { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id)); notify('Record Purged', 'info'); } };
 
-        window.adminStaffAction = async (email, action) => {
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_ledger', email);
+        window.adminStaffAction = async (id, action) => {
+            if(!db) return;
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_ledger', id);
             if (action === 'approve') {
                 await updateDoc(userRef, { verified: true });
                 notify('Staff Approved', 'success');
@@ -555,6 +571,7 @@
 
         async function handleGatewayAuth(e, mode) {
             e.preventDefault();
+            if(!db) { notify('Command Hub offline (Database Error)', 'error'); return; }
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
             try {
@@ -580,6 +597,7 @@
         }
 
         window.submitRequest = async () => {
+            if(!db) return;
             const items = document.getElementById('req-items').value;
             const note = document.getElementById('req-note').value;
             if (!items) return;
@@ -589,6 +607,7 @@
         };
 
         window.submitBeneficiary = async () => {
+            if(!db) return;
             const name = document.getElementById('bene-name').value;
             const size = document.getElementById('bene-size').value;
             if (!name || !size) return;
@@ -598,6 +617,7 @@
         };
 
         window.submitDonation = async () => {
+            if(!db) return;
             const donor = document.getElementById('don-name').value;
             const item = document.getElementById('don-item').value;
             if (!donor || !item) return;
