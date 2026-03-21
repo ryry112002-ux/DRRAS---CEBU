@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
         .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; }
         .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
         .btn-transition { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -18,21 +18,52 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Hero Styling */
+        .tech-grid {
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 30px 30px;
+            position: absolute;
+            inset: 0;
+            opacity: 0.4;
+            z-index: -1;
+        }
+
         .system-label { 
-            letter-spacing: 0.3em; 
-            font-size: 0.75rem; 
+            letter-spacing: 0.5em; 
+            font-size: 0.7rem; 
             font-weight: 900; 
             color: #2563eb; 
             text-transform: uppercase;
+            display: inline-block;
+            padding: 6px 16px;
+            border: 1px solid #dbeafe;
+            background: #eff6ff;
+            border-radius: 6px;
         }
         .hero-title {
-            line-height: 1.05;
-            letter-spacing: -0.04em;
+            line-height: 1.1;
+            letter-spacing: -0.05em;
+        }
+        .tech-border {
+            position: relative;
+            padding: 3rem 2rem;
+            margin-top: 2rem;
+        }
+        .tech-border::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 40px; height: 40px;
+            border-top: 4px solid #2563eb; border-left: 4px solid #2563eb;
+        }
+        .tech-border::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0; width: 40px; height: 40px;
+            border-bottom: 4px solid #2563eb; border-right: 4px solid #2563eb;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col relative">
+    <div class="tech-grid"></div>
 
     <!-- NAVIGATION HUB -->
     <nav class="glass-nav sticky top-0 z-50 px-6 py-4">
@@ -53,9 +84,7 @@
                     <button onclick="showView('hotlines')" class="hover:text-blue-600 btn-transition">Hotlines</button>
                 </div>
                 <div class="h-6 w-px bg-slate-200 hidden md:block"></div>
-                <div id="auth-buttons" class="flex items-center gap-3">
-                    <!-- Auth UI Injected -->
-                </div>
+                <div id="auth-buttons" class="flex items-center gap-3"></div>
             </div>
         </div>
     </nav>
@@ -66,7 +95,7 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-950 text-white pt-16 pb-12 border-t border-slate-900">
+    <footer class="bg-slate-950 text-white pt-16 pb-12 border-t border-slate-900 z-10">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
             <div class="col-span-1 md:col-span-2 space-y-4">
                 <div class="flex items-center justify-center md:justify-start gap-2">
@@ -116,13 +145,13 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDatabase, ref, set, get, onValue, push, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        // Environment Variables Handling
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'dreras-cebu-hub';
         let db = null;
         let auth = null;
 
+        const RTDB_URL = "https://drras-cebu-default-rtdb.firebaseio.com/";
         let sessionState = { active: false, profile: null };
         const HUBS = ["Cebu City", "Mandaue City", "Lapu-Lapu City", "Talisay City", "Toledo City", "Consolacion", "Liloan", "Minglanilla", "Bogo", "Carcar"];
         const ROLES = {
@@ -134,27 +163,26 @@
         async function init() {
             lucide.createIcons();
             
-            // Safe Initialization for External Hosting (GitHub)
-            if (typeof __firebase_config !== 'undefined') {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config !== "") {
                 try {
                     const firebaseConfig = JSON.parse(__firebase_config);
+                    firebaseConfig.databaseURL = RTDB_URL; 
                     const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
+                    db = getDatabase(app);
                     auth = getAuth(app);
 
-                    if (typeof __initial_auth_token !== 'undefined') {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token !== "") {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
                         await signInAnonymously(auth);
                     }
                 } catch (e) {
-                    console.warn("Firebase initialization limited:", e.message);
+                    console.error("Firebase init error:", e.message);
                 }
             } else {
-                console.warn("Firebase configuration missing. Real-time database features will require configuration.");
+                console.warn("Firebase configuration missing.");
             }
 
-            // Restore session from localStorage if exists
             const savedSession = localStorage.getItem(`dreras_session_${appId}`);
             if (savedSession) {
                 sessionState = JSON.parse(savedSession);
@@ -211,34 +239,32 @@
         function renderLanding() {
             const main = document.getElementById('main-content');
             main.innerHTML = `
-                <div class="space-y-24 animate-in fade-in slide-in-from-bottom-6 duration-500">
-                    <section class="max-w-4xl py-12">
-                        <div class="space-y-10">
-                            <div class="space-y-3">
-                                <span class="system-label">System Platform 2026</span>
-                                <h2 class="text-5xl md:text-7xl font-black text-slate-900 hero-title uppercase tracking-tighter">
-                                    Disaster Relief <br> & Emergency <br> <span class="text-blue-700 italic">Resource</span> <br> Allocation System
-                                </h2>
-                            </div>
-                            <p class="text-slate-500 text-lg md:text-xl font-medium max-w-2xl leading-relaxed border-l-4 border-blue-600 pl-6">
+                <div class="space-y-32 animate-in fade-in slide-in-from-bottom-6 duration-500 py-12">
+                    <section class="flex flex-col items-center text-center relative px-4">
+                        <div class="tech-border flex flex-col items-center max-w-6xl">
+                            <span class="system-label mb-8">SYSTEM PLATFORM 2026</span>
+                            <h2 class="text-5xl md:text-8xl font-black text-slate-900 hero-title uppercase tracking-tighter">
+                                Disaster Relief <br> & Emergency <br> <span class="text-blue-700 italic">Resource</span> <br> Allocation System
+                            </h2>
+                            <p class="text-slate-500 text-lg md:text-xl font-medium max-w-2xl leading-relaxed mt-12 mb-12">
                                 Centralized telemetry for Cebu's relief pipeline. Monitoring resource deficits across 10 hubs in real-time to ensure coordinated provincial response.
                             </p>
-                            <div class="flex flex-wrap gap-4 pt-6">
-                                <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 shadow-xl btn-transition">Cebu Hotlines</button>
-                                <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border-2 border-slate-200 text-slate-700 px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 btn-transition">View Urgent Needs</button>
+                            <div class="flex flex-wrap justify-center gap-6">
+                                <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 shadow-xl btn-transition transform hover:-translate-y-1">Cebu Hotlines</button>
+                                <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border-2 border-blue-600 text-blue-600 px-12 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-50 btn-transition transform hover:-translate-y-1">View Urgent Needs</button>
                             </div>
                         </div>
                     </section>
 
-                    <section id="urgent-needs" class="space-y-10">
-                        <div class="flex justify-between items-end border-b-2 border-slate-100 pb-8">
-                            <div>
-                                <h3 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3"><i data-lucide="zap" class="text-orange-500 fill-orange-500"></i> Urgent Needs</h3>
-                                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2">Authenticated deficit reports from station officers</p>
+                    <section id="urgent-needs" class="space-y-12 py-12 scroll-mt-24">
+                        <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-2 border-slate-100 pb-10 gap-6">
+                            <div class="text-center md:text-left">
+                                <h3 class="text-4xl font-black text-slate-900 tracking-tight flex items-center justify-center md:justify-start gap-4"><i data-lucide="zap" class="text-orange-500 fill-orange-500 w-8 h-8"></i> Urgent Needs</h3>
+                                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-3">Authenticated deficit reports from station officers</p>
                             </div>
                             <button onclick="openModal('donate')" class="text-xs font-black text-blue-600 uppercase underline decoration-2 underline-offset-8">Support Sector Hub</button>
                         </div>
-                        <div id="radar-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+                        <div id="radar-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10"></div>
                     </section>
                 </div>
             `;
@@ -248,30 +274,34 @@
         function initRadar() {
             const container = document.getElementById('radar-grid');
             if (!db) {
-                container.innerHTML = `<div class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-sm">Database connection required for live data</div>`;
+                container.innerHTML = `<div class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-sm">Command Hub Offline (Check Config)</div>`;
                 return;
             }
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), where('status', 'in', ['pending', 'dispatched']));
-            onSnapshot(q, (snap) => {
-                if (snap.empty) {
+            onValue(ref(db, 'requests'), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
                     container.innerHTML = `<div class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-sm">All Sectors Optimal</div>`;
                     return;
                 }
-                container.innerHTML = snap.docs.map(doc => {
-                    const data = doc.data();
-                    const isUrgent = data.status === 'pending';
+                const requests = Object.keys(data).map(id => ({ id, ...data[id] })).filter(r => r.status === 'pending' || r.status === 'dispatched');
+                if (requests.length === 0) {
+                    container.innerHTML = `<div class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-sm">All Sectors Optimal</div>`;
+                    return;
+                }
+                container.innerHTML = requests.map(r => {
+                    const isUrgent = r.status === 'pending';
                     return `
-                        <div class="bg-white p-8 rounded-[3rem] card-shadow border border-slate-50 group hover:-translate-y-2 btn-transition relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-full h-2 bg-${isUrgent ? 'rose' : 'blue'}-500"></div>
-                            <div class="flex justify-between items-start mb-6">
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${data.location} Hub</span>
-                                <i data-lucide="${isUrgent ? 'alert-triangle' : 'truck'}" class="w-5 h-5 text-${isUrgent ? 'rose' : 'blue'}-500"></i>
+                        <div class="bg-white p-10 rounded-[3rem] card-shadow border border-slate-50 group hover:-translate-y-2 btn-transition relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-3 bg-${isUrgent ? 'rose' : 'blue'}-500"></div>
+                            <div class="flex justify-between items-start mb-8">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${r.location} Hub</span>
+                                <i data-lucide="${isUrgent ? 'alert-triangle' : 'truck'}" class="w-6 h-6 text-${isUrgent ? 'rose' : 'blue'}-500"></i>
                             </div>
-                            <h4 class="text-2xl font-black text-slate-900 leading-none uppercase mb-2 group-hover:text-blue-700">${data.items}</h4>
-                            <p class="text-xs text-slate-500 italic mb-8 line-clamp-2">"${data.note || 'Urgent allocation required.'}"</p>
-                            <div class="pt-6 border-t border-slate-50 flex justify-between items-center">
-                                <span class="text-[10px] font-black uppercase text-${isUrgent ? 'rose' : 'blue'}-600 tracking-wider">${data.status}</span>
-                                <button onclick="openModal('donate')" class="text-[10px] font-black text-slate-900 uppercase underline">Support</button>
+                            <h4 class="text-3xl font-black text-slate-900 leading-none uppercase mb-4 group-hover:text-blue-700">${r.items}</h4>
+                            <p class="text-sm text-slate-500 italic mb-10 line-clamp-2">"${r.note || 'Urgent allocation required.'}"</p>
+                            <div class="pt-8 border-t border-slate-50 flex justify-between items-center">
+                                <span class="text-[10px] font-black uppercase text-${isUrgent ? 'rose' : 'blue'}-600 tracking-wider">${r.status}</span>
+                                <button onclick="openModal('donate')" class="text-[10px] font-black text-slate-900 uppercase underline tracking-widest">Provide Support</button>
                             </div>
                         </div>`;
                 }).join('');
@@ -282,44 +312,33 @@
         function renderHotlines() {
             const main = document.getElementById('main-content');
             main.innerHTML = `
-                <div class="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div class="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-top-4 duration-500 py-12">
                     <div class="text-center space-y-4">
-                        <div class="inline-block p-4 bg-blue-50 text-blue-700 rounded-3xl mb-4">
-                            <i data-lucide="phone-forwarded" class="w-8 h-8"></i>
-                        </div>
+                        <div class="inline-block p-4 bg-blue-50 text-blue-700 rounded-3xl mb-4"><i data-lucide="phone-forwarded" class="w-8 h-8"></i></div>
                         <h2 class="text-4xl font-black text-slate-900 uppercase tracking-tight">Cebu Emergency Channels</h2>
                         <p class="text-slate-500 font-medium">Direct authorized communication lines for provincial response units.</p>
                     </div>
                     <div class="grid grid-cols-1 gap-6">
-                        <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8 group hover:bg-blue-700 hover:text-white btn-transition">
+                        <div class="bg-white p-10 rounded-[2.5rem] card-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8 group hover:bg-blue-700 hover:text-white btn-transition">
                             <div class="space-y-1 text-center md:text-left">
                                 <p class="text-[10px] font-black uppercase tracking-widest text-blue-600 group-hover:text-blue-200">Provincial Command Center</p>
                                 <h3 class="text-3xl font-black italic uppercase tracking-tighter">PDRRMO CEBU</h3>
                             </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-3xl font-mono font-bold leading-none">(032) 255-0046</span>
-                                <div class="p-4 bg-blue-50 text-blue-600 rounded-2xl group-hover:bg-white/20 group-hover:text-white"><i data-lucide="phone-call" class="w-7 h-7"></i></div>
-                            </div>
+                            <div class="flex items-center gap-6"><span class="text-3xl font-mono font-bold leading-none">(032) 255-0046</span><div class="p-4 bg-blue-50 text-blue-600 rounded-2xl group-hover:bg-white/20 group-hover:text-white"><i data-lucide="phone-call" class="w-7 h-7"></i></div></div>
                         </div>
-                        <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8 group hover:bg-slate-900 hover:text-white btn-transition">
+                        <div class="bg-white p-10 rounded-[2.5rem] card-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8 group hover:bg-slate-900 hover:text-white btn-transition">
                             <div class="space-y-1 text-center md:text-left">
                                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-500">Medical Response Unit</p>
                                 <h3 class="text-3xl font-black italic uppercase tracking-tighter">CEBU CITY ERUF</h3>
                             </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-3xl font-mono font-bold leading-none">(032) 233-9300</span>
-                                <div class="p-4 bg-slate-100 text-slate-600 rounded-2xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="ambulance" class="w-7 h-7"></i></div>
-                            </div>
+                            <div class="flex items-center gap-6"><span class="text-3xl font-mono font-bold leading-none">(032) 233-9300</span><div class="p-4 bg-slate-100 text-slate-600 rounded-2xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="ambulance" class="w-7 h-7"></i></div></div>
                         </div>
-                        <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8 group hover:bg-rose-600 hover:text-white btn-transition">
+                        <div class="bg-white p-10 rounded-[2.5rem] card-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8 group hover:bg-rose-600 hover:text-white btn-transition">
                             <div class="space-y-1 text-center md:text-left">
                                 <p class="text-[10px] font-black uppercase tracking-widest text-rose-600 group-hover:text-rose-200">Philippine Red Cross</p>
                                 <h3 class="text-3xl font-black italic uppercase tracking-tighter">RED CROSS HUB</h3>
                             </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-3xl font-mono font-bold leading-none">(032) 253-4611</span>
-                                <div class="p-4 bg-rose-50 text-rose-600 rounded-2xl group-hover:bg-white/20 group-hover:text-white"><i data-lucide="heart" class="w-7 h-7"></i></div>
-                            </div>
+                            <div class="flex items-center gap-6"><span class="text-3xl font-mono font-bold leading-none">(032) 253-4611</span><div class="p-4 bg-rose-50 text-rose-600 rounded-2xl group-hover:bg-white/20 group-hover:text-white"><i data-lucide="heart" class="w-7 h-7"></i></div></div>
                         </div>
                     </div>
                 </div>
@@ -331,24 +350,17 @@
             if (!sessionState.profile) return showView('landing');
             const main = document.getElementById('main-content');
             main.innerHTML = `
-                <div class="space-y-10 animate-in fade-in duration-500">
+                <div class="space-y-10 animate-in fade-in duration-500 py-6">
                     <header class="flex flex-col md:flex-row justify-between items-end gap-6 bg-white p-10 rounded-[3rem] card-shadow border border-slate-100">
                         <div class="flex items-center gap-6">
-                            <div class="w-20 h-20 bg-blue-700 text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-xl border-4 border-white">
-                                ${sessionState.profile.name.charAt(0)}
-                            </div>
+                            <div class="w-20 h-20 bg-blue-700 text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-xl border-4 border-white">${sessionState.profile.name.charAt(0)}</div>
                             <div>
                                 <p class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1">STATION OFFICER AUTHORIZED</p>
                                 <h2 class="text-3xl font-black text-slate-900 tracking-tight uppercase">${sessionState.profile.name}</h2>
                                 <p class="text-xs font-bold text-slate-400 mt-1 uppercase">${sessionState.profile.role} | Hub: <span class="text-slate-600 underline">${sessionState.profile.location}</span></p>
                             </div>
                         </div>
-                        <div class="flex gap-4">
-                            <div class="bg-emerald-50 px-6 py-3 rounded-2xl border border-emerald-100 text-center">
-                                <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Auth Status</p>
-                                <p class="text-xs font-black text-emerald-700 uppercase">SYNCHRONIZED</p>
-                            </div>
-                        </div>
+                        <div class="flex gap-4"><div class="bg-emerald-50 px-6 py-3 rounded-2xl border border-emerald-100 text-center"><p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Auth Status</p><p class="text-xs font-black text-emerald-700 uppercase">SYNCHRONIZED</p></div></div>
                     </header>
                     <div id="dash-content"></div>
                 </div>
@@ -365,19 +377,10 @@
             container.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div class="lg:col-span-2 space-y-10">
-                        <div class="bg-white rounded-[3.5rem] p-12 card-shadow border border-slate-100">
-                            <h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight mb-12 flex items-center gap-3"><i data-lucide="layout-grid" class="text-blue-700"></i> Global Pipeline Monitor</h3>
-                            <div id="admin-requests" class="space-y-6"></div>
-                        </div>
-                        <div class="bg-white rounded-[3.5rem] p-12 card-shadow border border-slate-100">
-                            <h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight mb-12 flex items-center gap-3"><i data-lucide="shield-check" class="text-emerald-600"></i> Staff Directory</h3>
-                            <div id="admin-staff" class="space-y-4"></div>
-                        </div>
+                        <div class="bg-white rounded-[3.5rem] p-12 card-shadow border border-slate-100"><h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight mb-12 flex items-center gap-3"><i data-lucide="layout-grid" class="text-blue-700"></i> Global Pipeline Monitor</h3><div id="admin-requests" class="space-y-6"></div></div>
+                        <div class="bg-white rounded-[3.5rem] p-12 card-shadow border border-slate-100"><h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight mb-12 flex items-center gap-3"><i data-lucide="shield-check" class="text-emerald-600"></i> Staff Directory</h3><div id="admin-staff" class="space-y-4"></div></div>
                     </div>
-                    <div class="bg-rose-700 text-white rounded-[3.5rem] p-12 shadow-2xl space-y-10 h-fit sticky top-28">
-                        <h3 class="text-xl font-black uppercase tracking-widest border-b border-white/20 pb-8 flex items-center gap-3"><i data-lucide="heart" class="text-white"></i> Donations Ledger</h3>
-                        <div id="admin-donations" class="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar"></div>
-                    </div>
+                    <div class="bg-rose-700 text-white rounded-[3.5rem] p-12 shadow-2xl space-y-10 h-fit sticky top-28"><h3 class="text-xl font-black uppercase tracking-widest border-b border-white/20 pb-8 flex items-center gap-3"><i data-lucide="heart" class="text-white"></i> Donations Ledger</h3><div id="admin-donations" class="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar"></div></div>
                 </div>
             `;
             if (db) initAdminListeners();
@@ -388,21 +391,9 @@
             container.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div class="lg:col-span-2 space-y-8">
-                        <div class="bg-white rounded-[3rem] card-shadow border border-slate-100 p-10">
-                            <div class="flex justify-between items-center mb-10 border-b border-slate-50 pb-8">
-                                <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-2"><i data-lucide="clipboard-list" class="text-blue-600"></i> Station Ledger</h3>
-                                <button onclick="openModal('request')" class="bg-blue-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 shadow-xl shadow-blue-100 btn-transition">+ Log Requisition</button>
-                            </div>
-                            <div id="barangay-requests" class="space-y-6"></div>
-                        </div>
+                        <div class="bg-white rounded-[3rem] card-shadow border border-slate-100 p-10"><div class="flex justify-between items-center mb-10 border-b border-slate-50 pb-8"><h3 class="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-2"><i data-lucide="clipboard-list" class="text-blue-600"></i> Station Ledger</h3><button onclick="openModal('request')" class="bg-blue-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 shadow-xl shadow-blue-100 btn-transition">+ Log Requisition</button></div><div id="barangay-requests" class="space-y-6"></div></div>
                     </div>
-                    <div class="bg-slate-900 text-white rounded-[3rem] p-10 shadow-2xl space-y-10">
-                        <div class="flex justify-between items-center border-b border-white/10 pb-8">
-                            <h3 class="text-lg font-black uppercase tracking-tight flex items-center gap-2"><i data-lucide="users" class="text-blue-400"></i> Resident Log</h3>
-                            <button onclick="openModal('beneficiary')" class="text-[9px] font-black text-blue-400 uppercase tracking-widest hover:text-white underline underline-offset-4">Add Entry</button>
-                        </div>
-                        <div id="beneficiary-list" class="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2"></div>
-                    </div>
+                    <div class="bg-slate-900 text-white rounded-[3rem] p-10 shadow-2xl space-y-10"><div class="flex justify-between items-center border-b border-white/10 pb-8"><h3 class="text-lg font-black uppercase tracking-tight flex items-center gap-2"><i data-lucide="users" class="text-blue-400"></i> Resident Log</h3><button onclick="openModal('beneficiary')" class="text-[9px] font-black text-blue-400 uppercase tracking-widest hover:text-white underline underline-offset-4">Add Entry</button></div><div id="beneficiary-list" class="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2"></div></div>
                 </div>
             `;
             if (db) initBarangayListeners();
@@ -412,119 +403,67 @@
             const container = document.getElementById('dash-content');
             container.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div class="bg-white rounded-[3rem] p-10 card-shadow border border-slate-100 space-y-10">
-                        <div class="flex items-center gap-3 border-b border-slate-50 pb-8">
-                            <i data-lucide="package" class="text-orange-600 w-8 h-8"></i>
-                            <h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Pending Dispatch</h3>
-                        </div>
-                        <div id="dispatch-queue" class="space-y-6"></div>
-                    </div>
-                    <div class="bg-slate-950 rounded-[3rem] p-10 shadow-2xl text-white space-y-10 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-12 opacity-5"><i data-lucide="truck" class="w-48 h-48"></i></div>
-                        <div class="flex items-center gap-3 border-b border-white/10 pb-8 relative z-10">
-                            <i data-lucide="compass" class="text-blue-400 w-8 h-8"></i>
-                            <h3 class="text-2xl font-black uppercase tracking-tight">Active Transit</h3>
-                        </div>
-                        <div id="transit-queue" class="space-y-6 relative z-10"></div>
-                    </div>
+                    <div class="bg-white rounded-[3rem] p-10 card-shadow border border-slate-100 space-y-10"><div class="flex items-center gap-3 border-b border-slate-50 pb-8"><i data-lucide="package" class="text-orange-600 w-8 h-8"></i><h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Pending Dispatch</h3></div><div id="dispatch-queue" class="space-y-6"></div></div>
+                    <div class="bg-slate-950 rounded-[3rem] p-10 shadow-2xl text-white space-y-10 relative overflow-hidden"><div class="absolute top-0 right-0 p-12 opacity-5"><i data-lucide="truck" class="w-48 h-48"></i></div><div class="flex items-center gap-3 border-b border-white/10 pb-8 relative z-10"><i data-lucide="compass" class="text-blue-400 w-8 h-8"></i><h3 class="text-2xl font-black uppercase tracking-tight">Active Transit</h3></div><div id="transit-queue" class="space-y-6 relative z-10"></div></div>
                 </div>
             `;
             if (db) initLogisticsListeners();
         }
 
         function initAdminListeners() {
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), (snap) => {
-                document.getElementById('admin-requests').innerHTML = snap.docs.map(doc => `<div class="p-8 bg-slate-50 rounded-[2.5rem] flex justify-between items-center hover:bg-white border border-transparent hover:border-blue-100 btn-transition shadow-sm">
-                    <div><p class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1">${doc.data().location} Hub Node</p><h4 class="text-2xl font-black uppercase tracking-tighter text-slate-800">${doc.data().items}</h4><p class="text-[9px] font-bold text-slate-400 uppercase mt-2">Status: ${doc.data().status}</p></div>
-                    <button onclick="adminAction('${doc.id}', 'delete_req')" class="p-3 text-slate-300 hover:text-rose-600 btn-transition"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
-                </div>`).join('') || `<div class="py-20 text-center text-slate-300 uppercase font-black text-xs tracking-widest">Regional Static</div>`;
+            onValue(ref(db, 'requests'), (snapshot) => {
+                const data = snapshot.val();
+                document.getElementById('admin-requests').innerHTML = data ? Object.keys(data).map(id => `<div class="p-8 bg-slate-50 rounded-[2.5rem] flex justify-between items-center hover:bg-white border border-transparent hover:border-blue-100 btn-transition shadow-sm"><div><p class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1">${data[id].location} Hub Node</p><h4 class="text-2xl font-black uppercase tracking-tighter text-slate-800">${data[id].items}</h4><p class="text-[9px] font-bold text-slate-400 uppercase mt-2">Status: ${data[id].status}</p></div><button onclick="adminAction('${id}', 'delete_req')" class="p-3 text-slate-300 hover:text-rose-600 btn-transition"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`).join('') : `<div class="py-20 text-center text-slate-300 uppercase font-black text-xs tracking-widest">Regional Static</div>`;
                 lucide.createIcons();
             });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users_ledger'), (snap) => {
-                document.getElementById('admin-staff').innerHTML = snap.docs.map(doc => {
-                    const data = doc.data();
-                    return `<div class="p-6 bg-slate-50 rounded-2xl flex justify-between items-center">
-                        <div><h4 class="font-bold text-slate-800 uppercase text-sm">${data.name}</h4><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${data.role} @ ${data.location}</p></div>
-                        <div class="flex items-center gap-3">
-                            ${!data.verified ? `<button onclick="adminStaffAction('${doc.id}', 'approve')" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700">Approve</button>` : `<span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[9px] font-black uppercase">Verified</span>`}
-                            <button onclick="adminStaffAction('${doc.id}', 'delete')" class="p-2 text-slate-300 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>`;
-                }).join('') || `<p class="text-center py-10 opacity-30 font-black uppercase text-xs">Directory Empty</p>`;
+            onValue(ref(db, 'users_ledger'), (snapshot) => {
+                const data = snapshot.val();
+                document.getElementById('admin-staff').innerHTML = data ? Object.keys(data).map(id => `<div class="p-6 bg-slate-50 rounded-2xl flex justify-between items-center"><div><h4 class="font-bold text-slate-800 uppercase text-sm">${data[id].name}</h4><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${data[id].role} @ ${data[id].location}</p></div><div class="flex items-center gap-3">${!data[id].verified ? `<button onclick="adminStaffAction('${id}', 'approve')" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700">Approve</button>` : `<span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[9px] font-black uppercase">Verified</span>`}<button onclick="adminStaffAction('${id}', 'delete')" class="p-2 text-slate-300 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`).join('') : `<p class="text-center py-10 opacity-30 font-black uppercase text-xs">Directory Empty</p>`;
                 lucide.createIcons();
             });
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'donations'), (snap) => {
-                document.getElementById('admin-donations').innerHTML = snap.docs.map(doc => `<div class="p-6 bg-white/10 rounded-2xl border border-white/10 flex items-center gap-4">
-                    <div class="p-2 bg-white/20 rounded-xl"><i data-lucide="gift" class="w-4 h-4 text-white"></i></div>
-                    <div><p class="font-black text-sm uppercase">${doc.data().donor}</p><p class="text-[10px] font-bold text-white/60 uppercase">${doc.data().item}</p></div>
-                </div>`).join('') || `<p class="py-20 text-center text-white/20 uppercase font-black text-xs tracking-widest">Awaiting Public Support</p>`;
+            onValue(ref(db, 'donations'), (snapshot) => {
+                const data = snapshot.val();
+                document.getElementById('admin-donations').innerHTML = data ? Object.keys(data).map(id => `<div class="p-6 bg-white/10 rounded-2xl border border-white/10 flex items-center gap-4"><div class="p-2 bg-white/20 rounded-xl"><i data-lucide="gift" class="w-4 h-4 text-white"></i></div><div><p class="font-black text-sm uppercase">${data[id].donor}</p><p class="text-[10px] font-bold text-white/60 uppercase">${data[id].item}</p></div></div>`).join('') : `<p class="py-20 text-center text-white/20 uppercase font-black text-xs tracking-widest">Awaiting Public Support</p>`;
                 lucide.createIcons();
             });
         }
 
         function initBarangayListeners() {
-            const reqQ = query(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), where('location', '==', sessionState.profile.location));
-            onSnapshot(reqQ, (snap) => {
-                const list = document.getElementById('barangay-requests');
-                if (snap.empty) { list.innerHTML = `<div class="py-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">No active requisitions</div>`; return; }
-                list.innerHTML = snap.docs.map(doc => {
-                    const data = doc.data();
-                    const isArrived = data.status === 'dispatched';
-                    return `
-                        <div class="p-8 bg-slate-50 rounded-[2.5rem] flex justify-between items-center gap-8 border-2 border-transparent hover:border-blue-100 btn-transition">
-                            <div><h4 class="font-black text-slate-900 text-2xl leading-none uppercase tracking-tighter mb-2">${data.items}</h4><p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status: <span class="text-${isArrived ? 'blue' : 'rose'}-600 underline">${data.status}</span></p></div>
-                            ${isArrived ? `<button onclick="updateRequest('${doc.id}', 'delivered')" class="bg-emerald-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-100 hover:bg-emerald-700">Confirm Delivery</button>` : `<div class="p-3 bg-white rounded-2xl text-slate-300 border border-slate-100"><i data-lucide="radio" class="w-6 h-6"></i></div>`}
-                        </div>
-                    `;
-                }).join('');
+            onValue(ref(db, 'requests'), (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('barangay-requests');
+                if (!data) { container.innerHTML = `<div class="py-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">No active requisitions</div>`; return; }
+                const filtered = Object.keys(data).map(id => ({ id, ...data[id] })).filter(r => r.location === sessionState.profile.location);
+                container.innerHTML = filtered.map(r => `
+                    <div class="p-8 bg-slate-50 rounded-[2.5rem] flex justify-between items-center gap-8 border-2 border-transparent hover:border-blue-100 btn-transition"><div><h4 class="font-black text-slate-900 text-2xl leading-none uppercase tracking-tighter mb-2">${r.items}</h4><p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status: <span class="text-${r.status === 'dispatched' ? 'blue' : 'rose'}-600 underline">${r.status}</span></p></div>
+                    ${r.status === 'dispatched' ? `<button onclick="updateRequest('${r.id}', 'delivered')" class="bg-emerald-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-100 hover:bg-emerald-700">Confirm Delivery</button>` : `<div class="p-3 bg-white rounded-2xl text-slate-300 border border-slate-100"><i data-lucide="radio" class="w-6 h-6"></i></div>`}</div>
+                `).join('') || `<div class="py-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">No active requisitions</div>`;
                 lucide.createIcons();
             });
-            const beneQ = collection(db, 'artifacts', appId, 'public', 'data', 'beneficiaries_hub', sessionState.profile.email, 'records');
-            onSnapshot(beneQ, (snap) => {
+            onValue(ref(db, `beneficiaries_hub/${sessionState.profile.email.replace(/\./g, '_')}`), (snapshot) => {
+                const data = snapshot.val();
                 const list = document.getElementById('beneficiary-list');
-                if (snap.empty) { list.innerHTML = `<p class="text-center py-20 text-slate-700 font-black uppercase text-[10px] tracking-widest">No Residents Logged</p>`; return; }
-                list.innerHTML = snap.docs.map(doc => {
-                    const data = doc.data();
-                    return `<div class="p-6 bg-white/5 rounded-3xl border border-white/5 flex justify-between items-center hover:bg-white/10 btn-transition">
-                        <div><p class="font-black text-white text-base leading-none uppercase tracking-tight mb-1">${data.name}</p><p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">${new Date(data.createdAt?.toMillis()).toLocaleDateString()}</p></div>
-                        <div class="w-12 h-12 rounded-2xl bg-white/10 flex flex-col items-center justify-center text-blue-400"><span class="text-[8px] font-black">HH</span><span class="text-lg font-black leading-none">${data.size}</span></div>
-                    </div>`;
-                }).join('');
+                if (!data) { list.innerHTML = `<p class="text-center py-20 text-slate-700 font-black uppercase text-[10px] tracking-widest">No Residents Logged</p>`; return; }
+                list.innerHTML = Object.keys(data).map(id => `<div class="p-6 bg-white/5 rounded-3xl border border-white/5 flex justify-between items-center hover:bg-white/10 btn-transition"><div><p class="font-black text-white text-base leading-none uppercase tracking-tight mb-1">${data[id].name}</p><p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Household Entry</p></div><div class="w-12 h-12 rounded-2xl bg-white/10 flex flex-col items-center justify-center text-blue-400"><span class="text-[8px] font-black">HH</span><span class="text-lg font-black leading-none">${data[id].size}</span></div></div>`).join('');
             });
         }
 
         function initLogisticsListeners() {
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), where('status', 'in', ['pending', 'dispatched']));
-            onSnapshot(q, (snap) => {
-                const pending = snap.docs.filter(d => d.data().status === 'pending');
-                const transiting = snap.docs.filter(d => d.data().status === 'dispatched');
-                document.getElementById('dispatch-queue').innerHTML = pending.map(doc => `<div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
-                    <div class="flex justify-between items-center"><span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${doc.data().location} HUB</span><span class="w-3 h-3 bg-rose-500 rounded-full active-dot"></span></div>
-                    <h4 class="font-black text-slate-900 text-3xl leading-none uppercase tracking-tighter">${doc.data().items}</h4>
-                    <button onclick="updateRequest('${doc.id}', 'dispatched')" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-800 btn-transition">Confirm Dispatch</button>
-                </div>`).join('') || `<p class="py-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">Dispatch Terminal Idle</p>`;
-                document.getElementById('transit-queue').innerHTML = transiting.map(doc => `<div class="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 flex justify-between items-center">
-                    <div class="space-y-2"><p class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Transit to ${doc.data().location}</p><h4 class="text-2xl font-black uppercase tracking-tight">${doc.data().items}</h4></div>
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-3xl flex items-center justify-center text-blue-400 active-dot"><i data-lucide="truck" class="w-8 h-8"></i></div>
-                </div>`).join('') || `<p class="py-20 text-center text-slate-700 font-black uppercase text-xs tracking-widest">No Active Cargo</p>`;
+            onValue(ref(db, 'requests'), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                const reqArray = Object.keys(data).map(id => ({ id, ...data[id] }));
+                const pending = reqArray.filter(r => r.status === 'pending');
+                const transiting = reqArray.filter(r => r.status === 'dispatched');
+                document.getElementById('dispatch-queue').innerHTML = pending.map(r => `<div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6"><div class="flex justify-between items-center"><span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${r.location} HUB</span><span class="w-3 h-3 bg-rose-500 rounded-full active-dot"></span></div><h4 class="font-black text-slate-900 text-3xl leading-none uppercase tracking-tighter">${r.items}</h4><button onclick="updateRequest('${r.id}', 'dispatched')" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-800 btn-transition">Confirm Dispatch</button></div>`).join('') || `<p class="py-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">Dispatch Terminal Idle</p>`;
+                document.getElementById('transit-queue').innerHTML = transiting.map(r => `<div class="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 flex justify-between items-center"><div class="space-y-2"><p class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Transit to ${r.location}</p><h4 class="text-2xl font-black uppercase tracking-tight">${r.items}</h4></div><div class="w-16 h-16 bg-blue-600/20 rounded-3xl flex items-center justify-center text-blue-400 active-dot"><i data-lucide="truck" class="w-8 h-8"></i></div></div>`).join('') || `<p class="py-20 text-center text-slate-700 font-black uppercase text-xs tracking-widest">No Active Cargo</p>`;
                 lucide.createIcons();
             });
         }
 
-        window.updateRequest = async (id, status) => { if(!db) return; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id), { status }); notify(`Status Updated to ${status}`, 'success'); };
-        window.adminAction = async (id, action) => { if(!db) return; if (action === 'delete_req') { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'requests', id)); notify('Record Purged', 'info'); } };
-
-        window.adminStaffAction = async (id, action) => {
-            if(!db) return;
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_ledger', id);
-            if (action === 'approve') {
-                await updateDoc(userRef, { verified: true });
-                notify('Staff Approved', 'success');
-            } else if (action === 'delete') {
-                await deleteDoc(userRef);
-                notify('Account Removed', 'info');
-            }
-        };
+        window.updateRequest = async (id, status) => { if(!db) return; await update(ref(db, `requests/${id}`), { status }); notify(`Status Updated to ${status}`, 'success'); };
+        window.adminAction = async (id, action) => { if(!db) return; if (action === 'delete_req') { await remove(ref(db, `requests/${id}`)); notify('Record Purged', 'info'); } };
+        window.adminStaffAction = async (id, action) => { if(!db) return; if (action === 'approve') { await update(ref(db, `users_ledger/${id}`), { verified: true }); notify('Staff Approved', 'success'); } else if (action === 'delete') { await remove(ref(db, `users_ledger/${id}`)); notify('Account Removed', 'info'); } };
 
         window.openModal = (type) => {
             const container = document.getElementById('modal-container');
@@ -561,11 +500,6 @@
                 body.innerHTML = `<div class="space-y-6"><div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Resident Head Name</label><input type="text" id="bene-name" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black uppercase"></div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Household Load</label><input type="number" id="bene-size" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-3xl text-center"></div>
                     <button onclick="submitBeneficiary()" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black uppercase">Commit to Log</button></div>`;
-            } else if (type === 'beneficiary') {
-                title.innerText = 'Resident Log Registration';
-                body.innerHTML = `<div class="space-y-6"><div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Resident Head Name</label><input type="text" id="bene-name" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black uppercase"></div>
-                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Household Load</label><input type="number" id="bene-size" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-3xl text-center"></div>
-                    <button onclick="submitBeneficiary()" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black uppercase">Commit to Log</button></div>`;
             } else if (type === 'donate') {
                 title.innerText = 'Cebu Relief Support Hub';
                 body.innerHTML = `<div class="space-y-8"><div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 text-center"><p class="text-sm font-bold text-blue-700">Physical Drop-off: Cebu Provincial Capitol</p></div>
@@ -580,21 +514,22 @@
 
         async function handleGatewayAuth(e, mode) {
             e.preventDefault();
-            if(!db) { notify('Command Hub offline (Database Error)', 'error'); return; }
+            if(!db) { notify('Command Hub Offline (Config Error)', 'error'); return; }
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
+            const cleanEmail = email.replace(/\./g, '_');
             try {
                 if (mode === 'signup') {
                     const name = document.getElementById('name').value;
                     const role = document.getElementById('role').value;
                     const location = document.getElementById('loc').value;
                     const profile = { name, role, location, email, pass, verified: (role === ROLES.ADMIN) };
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_ledger', email), profile);
+                    await set(ref(db, `users_ledger/${cleanEmail}`), profile);
                     sessionState = { active: true, profile };
                 } else {
-                    const userSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_ledger', email));
-                    if (userSnap.exists() && userSnap.data().pass === pass) {
-                        sessionState = { active: true, profile: userSnap.data() };
+                    const snapshot = await get(ref(db, `users_ledger/${cleanEmail}`));
+                    if (snapshot.exists() && snapshot.val().pass === pass) {
+                        sessionState = { active: true, profile: snapshot.val() };
                     } else { throw new Error("Invalid Hub Credentials"); }
                 }
                 localStorage.setItem(`dreras_session_${appId}`, JSON.stringify(sessionState));
@@ -610,7 +545,7 @@
             const items = document.getElementById('req-items').value;
             const note = document.getElementById('req-note').value;
             if (!items) return;
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), { items, note, location: sessionState.profile.location, status: 'pending', createdAt: serverTimestamp() });
+            await push(ref(db, 'requests'), { items, note, location: sessionState.profile.location, status: 'pending', createdAt: serverTimestamp() });
             closeModal();
             notify('Requisition Published', 'success');
         };
@@ -620,7 +555,8 @@
             const name = document.getElementById('bene-name').value;
             const size = document.getElementById('bene-size').value;
             if (!name || !size) return;
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'beneficiaries_hub', sessionState.profile.email, 'records'), { name, size, createdAt: serverTimestamp() });
+            const cleanEmail = sessionState.profile.email.replace(/\./g, '_');
+            await push(ref(db, `beneficiaries_hub/${cleanEmail}`), { name, size, createdAt: serverTimestamp() });
             closeModal();
             notify('Resident Logged', 'success');
         };
