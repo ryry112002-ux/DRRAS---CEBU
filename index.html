@@ -10,13 +10,26 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
         .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; }
-        .card-shadow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
         .btn-transition { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .active-dot { animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         .hide { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Hero Styling */
+        .system-label { 
+            letter-spacing: 0.3em; 
+            font-size: 0.75rem; 
+            font-weight: 900; 
+            color: #2563eb; 
+            text-transform: uppercase;
+        }
+        .hero-title {
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -107,7 +120,8 @@
 
         // Environment Variables Handling
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'dreras-cebu-hub';
-        let db, auth;
+        let db = null;
+        let auth = null;
 
         let sessionState = { active: false, profile: null };
         const HUBS = ["Cebu City", "Mandaue City", "Lapu-Lapu City", "Talisay City", "Toledo City", "Consolacion", "Liloan", "Minglanilla", "Bogo", "Carcar"];
@@ -137,7 +151,7 @@
                     console.warn("Firebase initialization limited:", e.message);
                 }
             } else {
-                console.warn("Firebase configuration missing. Real-time features disabled.");
+                console.warn("Firebase configuration missing. Real-time database features will require configuration.");
             }
 
             // Restore session from localStorage if exists
@@ -168,7 +182,7 @@
             } else {
                 container.innerHTML = `
                     <button onclick="openModal('login')" class="text-xs font-black text-slate-500 uppercase tracking-widest px-4 py-2 hover:text-blue-600 btn-transition">Staff Portal</button>
-                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-rose-600 px-6 py-2.5 rounded-xl shadow-lg shadow-rose-200 hover:bg-rose-700 btn-transition uppercase tracking-widest">Donate</button>
+                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-rose-600 px-6 py-2.5 rounded-xl shadow-lg shadow-rose-200 hover:bg-rose-700 btn-transition uppercase tracking-widest ml-2">Donate</button>
                 `;
             }
             lucide.createIcons();
@@ -197,35 +211,25 @@
         function renderLanding() {
             const main = document.getElementById('main-content');
             main.innerHTML = `
-                <div class="space-y-20 animate-in fade-in slide-in-from-bottom-6 duration-500">
-                    <section class="bg-white p-10 md:p-20 rounded-[3rem] card-shadow border border-slate-100 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative overflow-hidden">
-                        <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-50 rounded-full opacity-50 blur-3xl"></div>
-                        <div class="space-y-8 relative z-10">
-                            <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                <span class="w-2 h-2 bg-emerald-500 rounded-full active-dot"></span> System Live: provincial command
+                <div class="space-y-24 animate-in fade-in slide-in-from-bottom-6 duration-500">
+                    <section class="max-w-4xl py-12">
+                        <div class="space-y-10">
+                            <div class="space-y-3">
+                                <span class="system-label">System Platform 2026</span>
+                                <h2 class="text-5xl md:text-7xl font-black text-slate-900 hero-title uppercase tracking-tighter">
+                                    Disaster Relief <br> & Emergency <br> <span class="text-blue-700 italic">Resource</span> <br> Allocation System
+                                </h2>
                             </div>
-                            <h2 class="text-4xl md:text-6xl font-black text-slate-900 leading-[1.1] tracking-tighter uppercase">
-                                Disaster Relief & <br><span class="text-blue-700 italic">Emergency Resource</span> <br>Allocation System
-                            </h2>
-                            <p class="text-slate-500 text-base font-medium max-w-lg leading-relaxed border-l-4 border-blue-200 pl-6">
-                                Centralized telemetry for Cebu's relief pipeline. Monitoring resource deficits across 10 hubs in real-time.
+                            <p class="text-slate-500 text-lg md:text-xl font-medium max-w-2xl leading-relaxed border-l-4 border-blue-600 pl-6">
+                                Centralized telemetry for Cebu's relief pipeline. Monitoring resource deficits across 10 hubs in real-time to ensure coordinated provincial response.
                             </p>
-                            <div class="flex flex-wrap gap-4 pt-4">
-                                <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-200 btn-transition">Cebu Hotlines</button>
+                            <div class="flex flex-wrap gap-4 pt-6">
+                                <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 shadow-xl btn-transition">Cebu Hotlines</button>
                                 <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border-2 border-slate-200 text-slate-700 px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 btn-transition">View Urgent Needs</button>
                             </div>
                         </div>
-                        <div class="hidden lg:flex justify-center relative">
-                            <div class="w-96 h-96 bg-blue-700 rounded-[4rem] shadow-2xl shadow-blue-300 flex items-center justify-center -rotate-6 transform hover:rotate-0 btn-transition">
-                                <i data-lucide="radar" class="w-48 h-48 text-white/10 absolute"></i>
-                                <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 rotate-12 transform hover:rotate-0 btn-transition translate-x-12 translate-y-12">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Status Report</p>
-                                    <p class="text-3xl font-black text-rose-600 uppercase">Alert Level 2</p>
-                                    <p class="text-[10px] font-bold text-slate-500 mt-2">Active Deficits in 4 Sectors</p>
-                                </div>
-                            </div>
-                        </div>
                     </section>
+
                     <section id="urgent-needs" class="space-y-10">
                         <div class="flex justify-between items-end border-b-2 border-slate-100 pb-8">
                             <div>
@@ -244,7 +248,7 @@
         function initRadar() {
             const container = document.getElementById('radar-grid');
             if (!db) {
-                container.innerHTML = `<div class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-sm">Waiting for Command Connection...</div>`;
+                container.innerHTML = `<div class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-sm">Database connection required for live data</div>`;
                 return;
             }
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'requests'), where('status', 'in', ['pending', 'dispatched']));
@@ -552,6 +556,11 @@
                 body.innerHTML = `<div class="space-y-6"><div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Items for Allocation</label><input type="text" id="req-items" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 text-xl" placeholder="e.g. 500 GALLONS WATER"></div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Operational Notes</label><textarea id="req-note" rows="3" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-medium" placeholder="Sector instructions..."></textarea></div>
                     <button onclick="submitRequest()" class="w-full bg-blue-700 text-white py-5 rounded-3xl font-black uppercase shadow-2xl shadow-blue-100 hover:bg-blue-800">Submit to Command Hub</button></div>`;
+            } else if (type === 'beneficiary') {
+                title.innerText = 'Resident Log Registration';
+                body.innerHTML = `<div class="space-y-6"><div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Resident Head Name</label><input type="text" id="bene-name" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black uppercase"></div>
+                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Household Load</label><input type="number" id="bene-size" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-3xl text-center"></div>
+                    <button onclick="submitBeneficiary()" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black uppercase">Commit to Log</button></div>`;
             } else if (type === 'beneficiary') {
                 title.innerText = 'Resident Log Registration';
                 body.innerHTML = `<div class="space-y-6"><div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Resident Head Name</label><input type="text" id="bene-name" class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black uppercase"></div>
