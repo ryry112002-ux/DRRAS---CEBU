@@ -184,14 +184,16 @@
 
         const ROLES = { SUPER_ADMIN: 'super_admin', ADMIN: 'admin', BARANGAY: 'officer', LOGISTICS: 'logistic' };
 
-        // Standard Categories for Inventory Mapping
-        const INVENTORY_CATEGORIES = [
-            "Family Food Packs",
-            "Hygiene Kit",
-            "Water",
-            "Family Clothing/Shelter Kit",
-            "Kitchen Kit"
-        ];
+        // Hierarchical Inventory Structure based on Emergency Kits
+        const INVENTORY_STRUCTURE = {
+            "Family Food Packs": ["Rice (Kilos/Sacks)", "Canned Goods", "Instant Food Items (Noodles/Coffee/Milo)", "Biscuits/Crackers"],
+            "Water": ["Bottled Water", "Gallon Water"],
+            "Hygiene Kit": ["Toothbrush & Toothpaste", "Bath & Laundry Soap", "Sanitary Napkins", "Assorted Toiletries (Comb/Razor)"],
+            "Family Clothing Kit": ["Bath Towels", "Undergarments", "T-shirts & Sandos", "Shorts", "Slippers"],
+            "Kitchen Kit": ["Spoons & Forks", "Plates & Glasses", "Cooking/Frying Pans", "Ladles"],
+            "Sleeping Kit": ["Blankets", "Plastic Mat (Banig)", "Mosquito Net", "Pillows"],
+            "Shelter/Emergency Materials": ["Tarpaulins/Laminated Sacks", "Family/Modular Tents", "Jerry Cans", "Solar Lamps"]
+        };
 
         async function init() {
             lucide.createIcons();
@@ -330,10 +332,10 @@
                         html += `
                         <div class="bg-white p-8 card-shadow border-t-8 border-rose-500 rounded-2xl relative overflow-hidden group hover:-translate-y-1 btn-transition">
                             <div class="flex justify-between items-start mb-6">
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provincial Deficit</span>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${item.category}</span>
                                 <div class="w-10 h-10 bg-rose-50 flex items-center justify-center text-rose-500 rounded-lg group-hover:scale-110 btn-transition"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
                             </div>
-                            <h4 class="text-2xl font-black text-slate-900 leading-none uppercase mb-2 tracking-tight italic">${item.name}</h4>
+                            <h4 class="text-2xl font-black text-slate-900 leading-none uppercase mb-2 tracking-tight italic">${item.item_name}</h4>
                             <p class="text-sm font-bold text-slate-500 mb-8">Urgent Deficit: <span class="text-rose-600 font-black text-xl">${deficit}</span></p>
                             <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
                                 <div class="bg-blue-600 h-3 rounded-full" style="width: ${(item.current / item.target) * 100}%"></div>
@@ -409,7 +411,6 @@
             const container = document.getElementById('dash-content');
             container.innerHTML = `
                 <div class="space-y-8">
-                    <!-- Top Row: Inventory & Urgent Needs -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div class="bg-white p-8 card-shadow rounded-2xl border-t-8 border-rose-500">
                             <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4">
@@ -423,8 +424,6 @@
                             <div id="sa-inventory" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
                     </div>
-
-                    <!-- Bottom Row: Donations & Requests -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100">
                             <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-slate-50 pb-4"><i data-lucide="heart" class="text-rose-500 w-5 h-5"></i> Public Donations Queue</h3>
@@ -462,7 +461,8 @@
                     needsHtml += `
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
                             <div>
-                                <h4 class="font-black text-slate-800 uppercase text-sm">${item.name}</h4>
+                                <p class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${item.category}</p>
+                                <h4 class="font-black text-slate-800 uppercase text-sm">${item.item_name}</h4>
                                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Target: ${item.target}</p>
                             </div>
                             <span class="text-[10px] font-black uppercase ${item.target - item.current > 0 ? 'text-rose-500' : 'text-emerald-500'}">
@@ -472,7 +472,8 @@
                     `;
                     invHtml += `
                         <div class="p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col justify-center items-center text-center">
-                            <h4 class="font-black text-slate-300 uppercase text-xs mb-2">${item.name}</h4>
+                            <p class="text-[8px] font-black text-blue-400/80 uppercase tracking-widest mb-1">${item.category}</p>
+                            <h4 class="font-black text-slate-200 uppercase text-xs mb-2 leading-tight">${item.item_name}</h4>
                             <span class="text-3xl font-black text-blue-400 tracking-tight leading-none">${item.current}</span>
                         </div>
                     `;
@@ -595,14 +596,22 @@
             `;
         }
 
+        // Dependent Dropdown Helper
+        window.updateItemDropdown = (catSelectId, itemSelectId) => {
+            const category = document.getElementById(catSelectId).value;
+            const itemSelect = document.getElementById(itemSelectId);
+            const items = INVENTORY_STRUCTURE[category] || [];
+            itemSelect.innerHTML = items.map(i => `<option value="${i}">${i}</option>`).join('');
+        };
+
         window.openModal = (type) => {
             const container = document.getElementById('modal-container');
             const title = document.getElementById('modal-title');
             const body = document.getElementById('modal-body');
             container.classList.remove('hide');
             
-            // Standardizing the category options string for consistency
-            const catOptions = INVENTORY_CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            // Generate primary category options
+            const catOptions = Object.keys(INVENTORY_STRUCTURE).map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
             if (type === 'login') {
                 title.innerText = 'Staff Portal Access';
@@ -655,22 +664,32 @@
                 <form id="need-form" class="space-y-5">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                        <select id="need-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">${catOptions}</select>
+                        <select id="need-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" onchange="window.updateItemDropdown('need-cat', 'need-item')">${catOptions}</select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Specific Item</label>
+                        <select id="need-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500"></select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Total Needed</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required></div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Quantity</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required></div>
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Stock</label><input type="number" id="need-current" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" value="0" required></div>
                     </div>
                     <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-rose-700 btn-transition mt-2">Broadcast to Public</button>
                 </form>`;
+                
+                // Initialize dependent dropdown
+                setTimeout(() => window.updateItemDropdown('need-cat', 'need-item'), 0);
+
                 document.getElementById('need-form').onsubmit = async (e) => {
                     e.preventDefault();
                     if(!db) return;
-                    const catName = document.getElementById('need-name').value;
-                    const catId = catName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    const catName = document.getElementById('need-cat').value;
+                    const itemName = document.getElementById('need-item').value;
+                    const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
                     
-                    await update(ref(db, `urgent_needs/${catId}`), { 
-                        name: catName, 
+                    await update(ref(db, `urgent_needs/${dbId}`), { 
+                        category: catName,
+                        item_name: itemName, 
                         target: parseInt(document.getElementById('need-target').value), 
                         current: parseInt(document.getElementById('need-current').value) 
                     });
@@ -684,7 +703,11 @@
                 <form id="process-form" class="space-y-5 mt-2">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                        <select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">${catOptions}</select>
+                        <select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" onchange="window.updateItemDropdown('proc-cat', 'proc-item')">${catOptions}</select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Specific Item</label>
+                        <select id="proc-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500"></select>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Quantity Added</label>
@@ -693,24 +716,29 @@
                     <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-blue-700 btn-transition mt-2">Add to Central Inventory</button>
                 </form>`;
                 
+                // Initialize dependent dropdown
+                setTimeout(() => window.updateItemDropdown('proc-cat', 'proc-item'), 0);
+
                 document.getElementById('process-form').onsubmit = async (e) => {
                     e.preventDefault();
                     if(!db || !processingDonationId) return;
                     
                     const catName = document.getElementById('proc-cat').value;
-                    const catId = catName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    const itemName = document.getElementById('proc-item').value;
+                    const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
                     const addedQty = parseInt(document.getElementById('proc-qty').value);
                     
                     let currentQty = 0;
-                    let targetQty = 0;
-                    if (globalUrgentNeeds[catId]) {
-                        currentQty = globalUrgentNeeds[catId].current || 0;
-                        targetQty = globalUrgentNeeds[catId].target || 0;
+                    let targetQty = 0; // If they haven't broadcasted a need yet, target stays 0
+                    if (globalUrgentNeeds[dbId]) {
+                        currentQty = globalUrgentNeeds[dbId].current || 0;
+                        targetQty = globalUrgentNeeds[dbId].target || 0;
                     }
                     
                     // Update Central Inventory
-                    await update(ref(db, `urgent_needs/${catId}`), { 
-                        name: catName,
+                    await update(ref(db, `urgent_needs/${dbId}`), { 
+                        category: catName,
+                        item_name: itemName,
                         current: currentQty + addedQty,
                         target: targetQty
                     });
@@ -719,7 +747,7 @@
                     await update(ref(db, `donations/${processingDonationId}`), { status: 'processed' });
                     
                     closeModal();
-                    notify('Inventory Updated! Deficit Recalculated.', 'success');
+                    notify('Inventory Updated!', 'success');
                 };
             }
             lucide.createIcons();
