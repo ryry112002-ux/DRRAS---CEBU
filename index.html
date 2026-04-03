@@ -90,7 +90,6 @@
     <!-- NAVIGATION HUB -->
     <nav class="glass-nav sticky top-0 z-50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <!-- Intelligent Logo Routing -->
             <div class="flex items-center gap-3 cursor-pointer group" onclick="sessionProfile ? showView('dashboard') : showView('landing')">
                 <div class="p-2.5 bg-slate-900 rounded-xl text-white shadow-lg group-hover:scale-105 btn-transition">
                     <i data-lucide="shield-check" class="w-6 h-6 text-blue-400"></i>
@@ -188,9 +187,12 @@
 
         let sessionProfile = null;
         let globalInventory = {}; 
-        let localHubInventory = {};
+        let adminHubInvOptions = ''; // To hold local hub inventory for dropdowns
+        let officerBrgyInvOptions = ''; // To hold specific barangay inventory for dropdowns
+        
         let processingDonationId = null; 
         let processingRequestId = null; 
+        let processingBrgyRequestId = null;
         
         const HUBS = [
             { id: 'cebu_city', name: 'Cebu City' },
@@ -452,7 +454,7 @@
             if (sessionProfile.role === ROLES.SUPER_ADMIN) {
                 actionButtons = `<button type="button" onclick="openModal('add_need')" class="w-full md:w-auto px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="radio" class="w-4 h-4"></i> Broadcast Need</button>`;
             } else if (sessionProfile.role === ROLES.ADMIN) {
-                actionButtons = `<button type="button" onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="send" class="w-4 h-4"></i> Request HQ Supply</button>`;
+                actionButtons = `<button type="button" onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="send" class="w-4 h-4"></i> Request PDRRMO Supply</button>`;
             } else if (sessionProfile.role === ROLES.BARANGAY) {
                 actionButtons = `
                     <button type="button" onclick="openModal('brgy_request')" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="hand-heart" class="w-4 h-4"></i> Request City Hub Supply</button>
@@ -600,22 +602,45 @@
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const r = data[id];
-                    if(r.status === 'ready_for_pickup' || r.status === 'in_transit' || r.status === 'arrived') return;
+                    if(r.status === 'in_transit' || r.status === 'arrived') return;
+                    
+                    let actionHtml = '';
+                    if (r.status === 'pending' || r.status === 'queued') {
+                        actionHtml = `
+                            <button type="button" onclick="queueRequest('${id}')" class="text-[9px] font-black bg-orange-50 text-orange-600 px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-orange-100 border border-orange-200 btn-transition">Queue</button>
+                            <button type="button" onclick="window.prepareFulfillRequest('${id}')" class="text-[9px] font-black bg-slate-900 text-white px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition">Allocate</button>
+                        `;
+                    } else if (r.status === 'ready_for_pickup') {
+                        actionHtml = `<button type="button" onclick="handoverRequest('${id}')" class="text-[9px] font-black bg-blue-50 text-blue-600 px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-100 border border-blue-200 btn-transition">Handover to Fleet</button>`;
+                    } else if (r.status === 'handed_over') {
+                        actionHtml = `<span class="text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">Awaiting Fleet Pick-up</span>`;
+                    }
                     
                     html += `
                         <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
                             <div class="pr-4">
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${r.location.replace('_', ' ')} HUB</span>
-                                <h4 class="font-black text-slate-900 text-base uppercase mt-1.5 italic tracking-tight">${r.items}</h4>
-                                ${r.note ? `<p class="text-[10px] font-medium text-slate-500 mt-2 line-clamp-2 italic border-l-2 border-slate-300 pl-2">"${r.note}"</p>` : ''}
+                                <h4 class="font-black text-slate-900 text-base uppercase mt-1 italic tracking-tight">${r.items}</h4>
                             </div>
-                            <button type="button" onclick="window.prepareFulfillRequest('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5 flex-shrink-0 text-center leading-tight relative z-50 pointer-events-auto cursor-pointer">Allocate<br>To LGU</button>
+                            <div class="flex items-center gap-2 relative z-50 pointer-events-auto">
+                                ${actionHtml}
+                            </div>
                         </div>
                     `;
                 });
                 container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">All Requests Handled</p>';
             });
         }
+
+        window.queueRequest = async (id) => {
+            await update(ref(db, `requests/${id}`), { status: 'queued' });
+            notify('Requisition placed in queue.', 'info');
+        };
+
+        window.handoverRequest = async (id) => {
+            await update(ref(db, `requests/${id}`), { status: 'handed_over' });
+            notify('Handed over to LGU Fleet!', 'success');
+        };
 
 
         // ==========================================
@@ -625,12 +650,10 @@
             const container = document.getElementById('dash-content');
             container.innerHTML = `
                 <div class="space-y-8">
-                    <!-- Top Row: Local Inventory & Incoming Cargo -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="bg-slate-900 p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-blue-500 text-white shadow-2xl shadow-slate-900/20">
                             <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4 gap-4 flex-wrap">
                                 <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="warehouse" class="text-blue-400 w-6 h-6"></i> C/MDRRMO Inventory</h3>
-                                <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest border border-blue-400/30 bg-blue-400/10 px-3 py-1.5 rounded-lg">Avail for BDRRMC</span>
                             </div>
                             <div id="admin-hub-inventory" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
@@ -641,7 +664,6 @@
                         </div>
                     </div>
 
-                    <!-- Bottom Row: Barangay Requisitions & Personnel -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="clipboard-list" class="text-blue-600 w-6 h-6"></i> Barangay Requisitions</h3>
@@ -669,6 +691,8 @@
                 const data = snapshot.val();
                 const container = document.getElementById('admin-hub-inventory');
                 
+                adminHubInvOptions = ''; // Reset options string
+                
                 if (!data) {
                     container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10 col-span-full">No supplies in local warehouse. Request from HQ.</p>';
                     return;
@@ -677,6 +701,12 @@
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const item = data[id];
+                    
+                    // Build options for Brgy approval modal
+                    if (item.current > 0) {
+                        adminHubInvOptions += `<option value="${id}">${item.item_name} (Avail: ${item.current})</option>`;
+                    }
+                    
                     html += `
                         <div class="p-4 bg-white/5 rounded-2xl border border-white/10 flex flex-col justify-center items-center text-center">
                             <h4 class="font-black text-slate-100 uppercase text-[11px] mb-2 leading-tight tracking-tight line-clamp-2">${item.item_name}</h4>
@@ -696,13 +726,22 @@
                 Object.keys(data).forEach(id => {
                     const r = data[id];
                     if (r.location !== sessionProfile.municipality) return;
-                    if (r.status === 'ready_for_pickup' || r.status === 'in_transit') {
-                        const isMoving = r.status === 'in_transit';
+                    if (r.status !== 'arrived') {
+                        
+                        let statusText = '';
+                        let isMoving = false;
+                        
+                        if (r.status === 'pending') statusText = 'Awaiting HQ Approval';
+                        else if (r.status === 'queued') statusText = 'Queued at HQ (Low Stock)';
+                        else if (r.status === 'ready_for_pickup') statusText = 'Ready at Capitol. Fleet Dispatched.';
+                        else if (r.status === 'handed_over') statusText = 'Fleet Loading at Capitol.';
+                        else if (r.status === 'in_transit') { statusText = '<span class="w-1.5 h-1.5 bg-blue-500 rounded-full active-dot"></span> In Transit via LGU Fleet'; isMoving = true; }
+                        
                         html += `
                             <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
                                 <div>
                                     <span class="text-[9px] font-black ${isMoving ? 'text-blue-500 flex items-center gap-1.5' : 'text-orange-500'} uppercase tracking-widest mb-1.5 block">
-                                        ${isMoving ? '<span class="w-1.5 h-1.5 bg-blue-500 rounded-full active-dot"></span> In Transit via LGU Fleet' : 'Awaiting Fleet Pick-up at HQ'}
+                                        ${statusText}
                                     </span>
                                     <h4 class="font-black text-slate-900 text-lg uppercase italic tracking-tight">${r.dispatched_qty || '?'}x ${r.dispatched_item || r.items}</h4>
                                 </div>
@@ -722,15 +761,27 @@
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const r = data[id];
-                    if (r.location !== sessionProfile.municipality || r.status !== 'pending') return;
+                    if (r.location !== sessionProfile.municipality || r.status === 'arrived') return;
+                    
+                    let actionHtml = '';
+                    if (r.status === 'pending' || r.status === 'queued') {
+                        actionHtml = `
+                            <button type="button" onclick="queueBrgyRequest('${id}')" class="text-[9px] font-black bg-orange-50 text-orange-600 px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-orange-100 border border-orange-200 btn-transition">Queue</button>
+                            <button type="button" onclick="window.prepareApproveBrgy('${id}')" class="text-[9px] font-black bg-slate-900 text-white px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition">Approve</button>
+                        `;
+                    } else {
+                        actionHtml = `<span class="text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">${r.status.replace(/_/g, ' ')}</span>`;
+                    }
                     
                     html += `
                         <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
                             <div class="pr-4">
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">From: ${r.officer_name}</span>
-                                <h4 class="font-black text-slate-900 text-base uppercase mt-1.5 italic tracking-tight">${r.qty}x ${r.item}</h4>
+                                <h4 class="font-black text-slate-900 text-base uppercase mt-1 italic tracking-tight">${r.qty}x ${r.item}</h4>
                             </div>
-                            <button type="button" onclick="window.approveBrgyRequest('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5 flex-shrink-0 text-center leading-tight relative z-50 pointer-events-auto cursor-pointer">Approve &<br>Allocate</button>
+                            <div class="flex items-center gap-2 relative z-50 pointer-events-auto">
+                                ${actionHtml}
+                            </div>
                         </div>
                     `;
                 });
@@ -766,33 +817,14 @@
             catch(e) { notify('Permission Denied', 'error'); }
         };
 
-        window.approveBrgyRequest = async (id) => {
-            if(!db) return;
-            try {
-                const reqSnap = await get(ref(db, `brgy_requests/${id}`));
-                const req = reqSnap.val();
-                
-                const dbId = req.item.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                const hubInvRef = ref(db, `hub_inventory/${req.location}/${dbId}`);
-                
-                const invSnap = await get(hubInvRef);
-                let currentQty = 0;
-                if (invSnap.exists()) { currentQty = invSnap.val().current || 0; }
-                
-                if (currentQty < req.qty) {
-                    notify('Insufficient stock in Local Hub to fulfill this request!', 'error');
-                    return;
-                }
-                
-                await update(hubInvRef, {
-                    current: currentQty - req.qty
-                });
-                
-                await update(ref(db, `brgy_requests/${id}`), { status: 'approved' });
-                notify('Barangay Request Approved & Allocated!', 'success');
-            } catch (error) {
-                notify('Database Error: Firebase Rules blocked access.', 'error');
-            }
+        window.queueBrgyRequest = async (id) => {
+            await update(ref(db, `brgy_requests/${id}`), { status: 'queued' });
+            notify('Barangay request placed in queue.', 'info');
+        };
+
+        window.prepareApproveBrgy = (id) => {
+            processingBrgyRequestId = id;
+            openModal('admin_approve_brgy');
         };
 
 
@@ -803,14 +835,14 @@
             const container = document.getElementById('dash-content');
             container.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100 border-t-8 border-t-orange-500">
-                        <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="package" class="text-orange-500 w-6 h-6"></i> Awaiting Pick-up at HQ</h3>
-                        <div id="logistics-pickup" class="space-y-4"></div>
+                    <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100 border-t-8 border-t-blue-500">
+                        <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="truck" class="text-blue-500 w-6 h-6"></i> HQ to City Hub Tasks</h3>
+                        <div id="logistics-hq-tasks" class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
                     </div>
-                    <div class="bg-slate-900 text-white p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-blue-500 relative overflow-hidden shadow-2xl shadow-slate-900/20">
-                        <div class="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><i data-lucide="truck" class="w-64 h-64"></i></div>
-                        <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-white/10 pb-4 relative z-10"><i data-lucide="compass" class="text-blue-400 w-6 h-6"></i> Active Transit to C/MDRRMO</h3>
-                        <div id="logistics-transit" class="space-y-4 relative z-10 pointer-events-auto"></div>
+                    <div class="bg-slate-900 text-white p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-fuchsia-500 relative overflow-hidden shadow-2xl shadow-slate-900/20">
+                        <div class="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><i data-lucide="map-pin" class="w-64 h-64"></i></div>
+                        <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-white/10 pb-4 relative z-10"><i data-lucide="map" class="text-fuchsia-400 w-6 h-6"></i> City Hub to Barangay Tasks</h3>
+                        <div id="logistics-brgy-tasks" class="space-y-4 relative z-10 pointer-events-auto max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
                     </div>
                 </div>
             `;
@@ -818,62 +850,94 @@
         }
 
         function initLogisticsListeners() {
+            // Track HQ to City
             onValue(ref(db, 'requests'), (snapshot) => {
                 const data = snapshot.val();
-                const pickupContainer = document.getElementById('logistics-pickup');
-                const transitContainer = document.getElementById('logistics-transit');
-                
-                if (!data) {
-                    pickupContainer.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Pending Pickups</p>';
-                    transitContainer.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Active Cargo</p>';
-                    return;
-                }
+                const container = document.getElementById('logistics-hq-tasks');
+                if (!data) { container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No HQ tasks active.</p>'; return; }
 
-                let pickupHtml = '';
-                let transitHtml = '';
-
+                let html = '';
                 Object.keys(data).forEach(id => {
                     const r = data[id];
                     if (r.location !== sessionProfile.municipality) return;
-                    
-                    const itemDesc = r.dispatched_item || r.items;
-                    const qtyDesc = r.dispatched_qty ? `${r.dispatched_qty}x ` : '';
+                    if (r.status === 'ready_for_pickup' || r.status === 'handed_over' || r.status === 'in_transit') {
+                        
+                        const itemDesc = r.dispatched_item || r.items;
+                        const qtyDesc = r.dispatched_qty ? `${r.dispatched_qty}x ` : '';
+                        
+                        let actionHtml = '';
+                        let statusText = '';
 
-                    if (r.status === 'ready_for_pickup') {
-                        pickupHtml += `
+                        if (r.status === 'ready_for_pickup') {
+                            statusText = 'Awaiting SA Handover at Capitol';
+                            actionHtml = `<button disabled class="w-full bg-slate-100 text-slate-400 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest mt-4">Waiting for PDRRMO Handover</button>`;
+                        } else if (r.status === 'handed_over') {
+                            statusText = 'Handed Over at Capitol';
+                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Begin Transit to City Hub</button>`;
+                        } else if (r.status === 'in_transit') {
+                            statusText = '<span class="w-2.5 h-2.5 bg-blue-500 rounded-full active-dot shadow-[0_0_10px_rgba(59,130,246,0.8)]"></span> Driving to City Hub';
+                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-blue-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Mark Delivered to Hub</button>`;
+                        }
+
+                        html += `
                             <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm relative z-20">
                                 <div class="flex justify-between items-start mb-4">
-                                    <span class="text-[10px] font-black text-orange-600 uppercase tracking-widest px-3 py-1 bg-orange-50 rounded-md border border-orange-100">HQ Allocation Ready</span>
-                                    <i data-lucide="map-pin" class="text-slate-400 w-5 h-5"></i>
+                                    <span class="text-[10px] font-black text-blue-600 flex items-center gap-2 uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-md border border-blue-100">${statusText}</span>
+                                    <i data-lucide="building" class="text-slate-400 w-5 h-5"></i>
                                 </div>
                                 <h4 class="font-black text-slate-900 text-2xl uppercase italic tracking-tighter leading-tight mb-2">${qtyDesc}${itemDesc}</h4>
-                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">Original Request: ${r.items}</p>
-                                <button type="button" onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Confirm Pick-up from Capitol</button>
-                            </div>
-                        `;
-                    } else if (r.status === 'in_transit') {
-                        transitHtml += `
-                            <div class="p-6 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm relative z-20">
-                                <div class="flex justify-between items-start mb-4">
-                                    <span class="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-2"><span class="w-2.5 h-2.5 bg-blue-400 rounded-full active-dot shadow-[0_0_10px_rgba(96,165,250,0.8)]"></span> Driving to ${r.location.replace('_', ' ')} Hub</span>
-                                    <i data-lucide="truck" class="text-white/40 w-5 h-5"></i>
-                                </div>
-                                <h4 class="font-black text-white text-2xl uppercase italic tracking-tighter leading-tight mb-6">${qtyDesc}${itemDesc}</h4>
-                                <button type="button" onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-white text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer">Mark Arrived at C/MDRRMO Hub</button>
+                                ${actionHtml}
                             </div>
                         `;
                     }
                 });
+                container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No HQ tasks active.</p>';
+                lucide.createIcons();
+            });
 
-                pickupContainer.innerHTML = pickupHtml || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Pending Pickups</p>';
-                transitContainer.innerHTML = transitHtml || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Active Cargo</p>';
+            // Track City Hub to Barangay
+            onValue(ref(db, 'brgy_requests'), (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('logistics-brgy-tasks');
+                if (!data) { container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Barangay tasks active.</p>'; return; }
+
+                let html = '';
+                Object.keys(data).forEach(id => {
+                    const r = data[id];
+                    if (r.location !== sessionProfile.municipality) return;
+                    if (r.status === 'ready_for_pickup' || r.status === 'in_transit') {
+                        
+                        let actionHtml = '';
+                        let statusText = '';
+
+                        if (r.status === 'ready_for_pickup') {
+                            statusText = 'Ready at City Hub';
+                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'in_transit')" class="w-full bg-white text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-100 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Begin Transit to Barangay</button>`;
+                        } else if (r.status === 'in_transit') {
+                            statusText = '<span class="w-2.5 h-2.5 bg-fuchsia-400 rounded-full active-dot shadow-[0_0_10px_rgba(217,70,239,0.8)]"></span> Driving to Barangay';
+                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'arrived')" class="w-full bg-fuchsia-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-700 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Mark Delivered to Barangay</button>`;
+                        }
+
+                        html += `
+                            <div class="p-6 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm relative z-20">
+                                <div class="flex justify-between items-start mb-4">
+                                    <span class="text-[10px] font-black text-fuchsia-300 flex items-center gap-2 uppercase tracking-widest">${statusText}</span>
+                                    <i data-lucide="map" class="text-white/40 w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-black text-white text-2xl uppercase italic tracking-tighter leading-tight mb-2">${r.dispatched_qty}x ${r.dispatched_item}</h4>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">To: ${r.officer_name}</p>
+                                ${actionHtml}
+                            </div>
+                        `;
+                    }
+                });
+                container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Barangay tasks active.</p>';
                 lucide.createIcons();
             });
         }
 
         window.updateRequestStatus = async (id, newStatus) => {
             if(!db) return;
-            
             try {
                 if (newStatus === 'arrived') {
                     const reqSnap = await get(ref(db, `requests/${id}`));
@@ -881,10 +945,9 @@
                     
                     const itemName = req.dispatched_item || req.items || 'Unknown Supply';
                     const qty = req.dispatched_qty || 1;
-                    
                     const dbId = itemName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                    const hubInvRef = ref(db, `hub_inventory/${req.location}/${dbId}`);
                     
+                    const hubInvRef = ref(db, `hub_inventory/${req.location}/${dbId}`);
                     const invSnap = await get(hubInvRef);
                     let currentQty = 0;
                     if (invSnap.exists()) { currentQty = invSnap.val().current || 0; }
@@ -894,13 +957,45 @@
                         item_name: itemName,
                         current: currentQty + qty
                     });
-                    
-                    notify('Cargo Delivered to Local Hub!', 'success');
+                    notify('Cargo Delivered to City Hub!', 'success');
                 } else {
                     notify('Cargo Secured. Drive safely.', 'success');
                 }
                 
                 await update(ref(db, `requests/${id}`), { status: newStatus });
+            } catch (error) {
+                console.error(error);
+                notify('Database Error: Firebase Rules blocked access.', 'error');
+            }
+        };
+
+        window.updateBrgyRequestStatus = async (id, newStatus) => {
+            if(!db) return;
+            try {
+                if (newStatus === 'arrived') {
+                    const reqSnap = await get(ref(db, `brgy_requests/${id}`));
+                    const req = reqSnap.val();
+                    
+                    const itemName = req.dispatched_item || req.item;
+                    const qty = req.dispatched_qty || req.qty;
+                    const dbId = itemName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    
+                    const brgyInvRef = ref(db, `brgy_inventory/${req.officer_uid}/${dbId}`);
+                    const invSnap = await get(brgyInvRef);
+                    let currentQty = 0;
+                    if (invSnap.exists()) { currentQty = invSnap.val().current || 0; }
+                    
+                    await update(brgyInvRef, {
+                        category: itemName,
+                        item_name: itemName,
+                        current: currentQty + qty
+                    });
+                    notify('Cargo Delivered to Barangay!', 'success');
+                } else {
+                    notify('En route to Barangay.', 'success');
+                }
+                
+                await update(ref(db, `brgy_requests/${id}`), { status: newStatus });
             } catch (error) {
                 console.error(error);
                 notify('Database Error: Firebase Rules blocked access.', 'error');
@@ -918,13 +1013,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-blue-500 shadow-inner border border-slate-100">
                             <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4 gap-4 flex-wrap">
-                                <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="warehouse" class="text-blue-500 w-6 h-6"></i> Available at City Hub</h3>
+                                <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="warehouse" class="text-blue-500 w-6 h-6"></i> Barangay Inventory</h3>
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-4 py-2 rounded-lg">Avail for DAF Distribution</span>
                             </div>
-                            <div id="officer-hub-inventory" class="grid grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="officer-brgy-inventory" class="grid grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
 
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
-                            <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="clipboard-list" class="text-blue-600 w-6 h-6"></i> My Requisitions</h3>
+                            <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="clipboard-list" class="text-blue-600 w-6 h-6"></i> My Requisitions to City Hub</h3>
                             <div id="officer-my-requests" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
                     </div>
@@ -939,22 +1035,29 @@
         }
 
         function initOfficerListeners() {
-            onValue(ref(db, `hub_inventory/${sessionProfile.municipality}`), (snapshot) => {
+            // Listen to Specific Barangay Inventory based on UID
+            onValue(ref(db, `brgy_inventory/${sessionProfile.uid}`), (snapshot) => {
                 const data = snapshot.val();
-                localHubInventory = data || {};
-                const container = document.getElementById('officer-hub-inventory');
+                officerBrgyInvOptions = ''; // Reset
+                
+                const container = document.getElementById('officer-brgy-inventory');
                 
                 if (!data) {
-                    container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10 col-span-full">No supplies currently available in the City Hub.</p>';
+                    container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10 col-span-full">No supplies available. Request from City Hub.</p>';
                     return;
                 }
 
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const item = data[id];
+                    
+                    if (item.current > 0) {
+                        officerBrgyInvOptions += `<option value="${id}">${item.item_name} (Avail: ${item.current})</option>`;
+                    }
+                    
                     html += `
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
-                            <h4 class="font-black text-slate-900 uppercase text-xs mb-2 leading-tight tracking-tight line-clamp-2">${item.item_name}</h4>
+                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
+                            <h4 class="font-black text-slate-900 uppercase text-xs mb-3 leading-tight tracking-tight line-clamp-2">${item.item_name}</h4>
                             <span class="text-3xl font-black text-blue-600 tracking-tighter leading-none">${item.current}</span>
                         </div>
                     `;
@@ -968,18 +1071,26 @@
                 if (!data) { container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No requisitions submitted.</p>'; return; }
                 
                 let html = '';
-                Object.keys(data).forEach(id => {
-                    const r = data[id];
-                    // Only show requests for this municipality
-                    if (r.location !== sessionProfile.municipality) return;
+                // Sort by timestamp
+                const reqArray = Object.keys(data).map(id => ({ id, ...data[id] })).sort((a,b) => b.timestamp - a.timestamp);
+                
+                reqArray.forEach(r => {
+                    if (r.officer_uid !== sessionProfile.uid) return; // Only see my requests
+                    
+                    let statusText = '';
+                    let statusColor = '';
+                    if (r.status === 'pending') { statusText = 'Awaiting City Hub'; statusColor = 'text-orange-500 bg-orange-50 border-orange-200'; }
+                    else if (r.status === 'queued') { statusText = 'Queued at City Hub'; statusColor = 'text-rose-500 bg-rose-50 border-rose-200'; }
+                    else if (r.status === 'ready_for_pickup') { statusText = 'Allocated. Awaiting Fleet.'; statusColor = 'text-blue-500 bg-blue-50 border-blue-200'; }
+                    else if (r.status === 'in_transit') { statusText = 'Fleet En Route'; statusColor = 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200'; }
+                    else if (r.status === 'arrived') { statusText = 'Arrived'; statusColor = 'text-emerald-600 bg-emerald-50 border-emerald-200'; }
                     
                     html += `
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
                             <div>
-                                <h4 class="font-black text-slate-900 text-base uppercase mt-1 italic tracking-tight">${r.qty}x ${r.item}</h4>
-                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">By: ${r.officer_name}</span>
+                                <h4 class="font-black text-slate-900 text-sm uppercase mt-1 italic tracking-tight">${r.qty}x ${r.item}</h4>
                             </div>
-                            <span class="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${r.status === 'pending' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}">${r.status}</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${statusColor}">${statusText}</span>
                         </div>
                     `;
                 });
@@ -1210,7 +1321,7 @@
                 };
 
             } else if (type === 'brgy_request') {
-                title.innerText = 'Request Supplies from C/MDRRMO Hub';
+                title.innerText = 'Request Supply from C/MDRRMO';
                 body.innerHTML = `
                 <div class="bg-blue-50 p-5 rounded-2xl mb-6 border border-blue-100 text-center">
                     <p class="text-[10px] font-black text-blue-700 uppercase tracking-widest">Transmit requisition to City/Municipal Admin</p>
@@ -1239,6 +1350,7 @@
                         await push(ref(db, 'brgy_requests'), { 
                             location: sessionProfile.municipality,
                             officer_name: sessionProfile.name,
+                            officer_uid: sessionProfile.uid,
                             item: itemName,
                             qty: qty,
                             status: 'pending',
@@ -1251,25 +1363,77 @@
                     }
                 };
 
+            } else if (type === 'admin_approve_brgy') {
+                title.innerText = 'Approve & Allocate to Barangay';
+                
+                if(!adminHubInvOptions) adminHubInvOptions = `<option disabled>No items available in local hub.</option>`;
+
+                body.innerHTML = `
+                <div class="bg-blue-50 p-5 rounded-2xl mb-6 border border-blue-100 shadow-inner">
+                    <p class="text-xs font-bold text-blue-800 leading-relaxed">Allocate items from your City Hub Inventory to the Barangay Fleet.</p>
+                </div>
+                <form id="approve-brgy-form" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Select Item from Hub</label>
+                        <select id="abrgy-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all">${adminHubInvOptions}</select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity to Dispatch</label>
+                        <input type="number" id="abrgy-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required>
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Deduct & Approve</button>
+                </form>`;
+
+                document.getElementById('approve-brgy-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    if(!db || !processingBrgyRequestId) return;
+                    try {
+                        const dbId = document.getElementById('abrgy-item').value;
+                        if(!dbId) return;
+                        
+                        const dispatchQty = parseInt(document.getElementById('abrgy-qty').value);
+                        
+                        const hubInvRef = ref(db, `hub_inventory/${sessionProfile.municipality}/${dbId}`);
+                        const invSnap = await get(hubInvRef);
+                        let currentQty = 0;
+                        if (invSnap.exists()) { currentQty = invSnap.val().current || 0; }
+                        
+                        if (currentQty < dispatchQty) {
+                            notify('Insufficient stock in Local Hub!', 'error');
+                            return;
+                        }
+                        
+                        await update(hubInvRef, { 
+                            current: currentQty - dispatchQty
+                        });
+                        
+                        await update(ref(db, `brgy_requests/${processingBrgyRequestId}`), { 
+                            status: 'ready_for_pickup',
+                            dispatched_item: invSnap.val().item_name,
+                            dispatched_qty: dispatchQty
+                        });
+                        
+                        closeModal();
+                        notify('Request Approved & Allocated!', 'success');
+                    } catch (error) {
+                        notify('Database Error: Firebase Rules blocked access.', 'error');
+                    }
+                };
+
             } else if (type === 'officer_distribute') {
                 title.innerText = 'Log DAF Distribution';
                 
-                let localInvOptions = Object.keys(localHubInventory).map(id => {
-                    const item = localHubInventory[id];
-                    return `<option value="${id}">${item.item_name} (Avail: ${item.current})</option>`;
-                }).join('');
-                
-                if(!localInvOptions) localInvOptions = `<option disabled>No items available in local hub.</option>`;
+                if(!officerBrgyInvOptions) officerBrgyInvOptions = `<option disabled>No items available in Barangay.</option>`;
 
                 body.innerHTML = `
                 <div class="bg-rose-50 p-4 rounded-xl mb-6 border border-rose-100 text-center">
-                    <p class="text-[10px] font-black text-rose-700 uppercase tracking-widest">Deducts from City Hub Inventory</p>
+                    <p class="text-[10px] font-black text-rose-700 uppercase tracking-widest">Deducts from Barangay Inventory</p>
                 </div>
                 <form id="dist-form" class="space-y-6">
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Household Name / DAF Number</label><input type="text" id="dist-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" required></div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Select Item from Hub</label>
-                        <select id="dist-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all">${localInvOptions}</select>
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Select Item from Barangay Stock</label>
+                        <select id="dist-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all">${officerBrgyInvOptions}</select>
                     </div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Given</label><input type="number" id="dist-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" required></div>
                     <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Confirm Distribution</button>
@@ -1281,24 +1445,27 @@
                     
                     try {
                         const dbId = document.getElementById('dist-item').value;
-                        if(!dbId || !localHubInventory[dbId]) { notify('Select a valid item', 'error'); return; }
+                        if(!dbId) { notify('Select a valid item', 'error'); return; }
                         
                         const qty = parseInt(document.getElementById('dist-qty').value);
-                        const itemName = localHubInventory[dbId].item_name;
-                        const currentStock = localHubInventory[dbId].current;
+                        
+                        const brgyInvRef = ref(db, `brgy_inventory/${sessionProfile.uid}/${dbId}`);
+                        const invSnap = await get(brgyInvRef);
+                        let currentStock = 0;
+                        if (invSnap.exists()) { currentStock = invSnap.val().current || 0; }
                         
                         if (qty > currentStock) {
-                            notify('Insufficient stock in Local Hub!', 'error');
+                            notify('Insufficient stock in Barangay!', 'error');
                             return;
                         }
                         
-                        await update(ref(db, `hub_inventory/${sessionProfile.municipality}/${dbId}`), {
+                        await update(brgyInvRef, {
                             current: currentStock - qty
                         });
                         
                         await push(ref(db, 'distributions'), {
                             family_name: document.getElementById('dist-name').value,
-                            item: itemName,
+                            item: invSnap.val().item_name,
                             qty: qty,
                             location: sessionProfile.municipality,
                             officer_name: sessionProfile.name,
@@ -1411,7 +1578,7 @@
         function notify(msg, type = 'info') {
             const hub = document.getElementById('notification-hub');
             const div = document.createElement('div');
-            const icons = { success: 'check-circle', error: 'alert-triangle', info: 'info' };
+            const icons = { success: 'check-circle-2', error: 'alert-triangle', info: 'info' };
             const bg = { success: 'bg-emerald-500', error: 'bg-rose-500', info: 'bg-slate-900' };
             div.className = `${bg[type]} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-right duration-300 pointer-events-auto border border-white/10`;
             div.innerHTML = `<i data-lucide="${icons[type]}" class="w-5 h-5"></i> <span class="text-xs font-black uppercase tracking-widest">${msg}</span>`;
