@@ -549,7 +549,7 @@
         };
 
         // ==========================================
-        // NEW: LOGISTICS DASHBOARD (Option A)
+        // LOGISTICS DASHBOARD (Option A)
         // ==========================================
         function renderLogisticsDash() {
             const container = document.getElementById('dash-content');
@@ -586,7 +586,6 @@
 
                 Object.keys(data).forEach(id => {
                     const r = data[id];
-                    // Logistics Officer only sees THEIR municipality's cargo
                     if (r.location !== sessionProfile.municipality) return;
 
                     if (r.status === 'ready_for_pickup') {
@@ -884,7 +883,6 @@
                         current: currentQty - dispatchQty
                     });
                     
-                    // Option A: Now it goes to ready_for_pickup for the local Logistics team
                     await update(ref(db, `requests/${processingRequestId}`), { 
                         status: 'ready_for_pickup',
                         dispatched_item: itemName,
@@ -922,7 +920,11 @@
                     closeModal();
                     notify('Authenticating...', 'info');
                 }
-            } catch (err) { notify(err.message, 'error'); }
+            } catch (err) { 
+                let msg = err.message;
+                if (err.code === 'auth/invalid-credential') msg = 'Invalid Credential.';
+                notify(msg, 'error'); 
+            }
         }
 
         function notify(msg, type = 'info') {
