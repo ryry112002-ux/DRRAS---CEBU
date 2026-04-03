@@ -166,6 +166,8 @@
         const auth = getAuth(app);
 
         let sessionProfile = null;
+        let globalUrgentNeeds = {}; // For Super Admin processing
+        let processingDonationId = null; // Temp holder
         
         const HUBS = [
             { id: 'cebu_city', name: 'Cebu City' },
@@ -180,23 +182,16 @@
             { id: 'carcar_city', name: 'Carcar City' }
         ];
 
-        const ROLES = {
-            SUPER_ADMIN: 'super_admin',
-            ADMIN: 'admin',
-            BARANGAY: 'officer',
-            LOGISTICS: 'logistic'
-        };
+        const ROLES = { SUPER_ADMIN: 'super_admin', ADMIN: 'admin', BARANGAY: 'officer', LOGISTICS: 'logistic' };
 
         async function init() {
             lucide.createIcons();
-            
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     const snapshot = await get(ref(db, `users/${user.uid}`));
                     if (snapshot.exists()) {
                         sessionProfile = snapshot.val();
                         sessionProfile.uid = user.uid;
-                        
                         if (sessionProfile.status === 'pending') {
                             notify('Account pending Admin approval.', 'error');
                             await signOut(auth);
@@ -220,8 +215,8 @@
                 container.innerHTML = `
                     <div class="flex items-center gap-4">
                         <div class="text-right hidden sm:block">
-                            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${sessionProfile.role}</p>
-                            <p class="text-sm font-bold text-slate-900 uppercase tracking-tight">${sessionProfile.municipality.replace('_', ' ')}</p>
+                            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest">${sessionProfile.role.replace('_', ' ')}</p>
+                            <p class="text-sm font-bold text-slate-900 uppercase tracking-tight">${sessionProfile.municipality === 'all' ? 'Provincial HQ' : sessionProfile.municipality.replace('_', ' ')}</p>
                         </div>
                         <button onclick="handleLogout()" class="px-5 py-2.5 bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 rounded-xl text-xs font-black uppercase tracking-widest border border-slate-200 btn-transition">
                             Log Out
@@ -237,10 +232,7 @@
             lucide.createIcons();
         }
 
-        window.handleLogout = async () => {
-            await signOut(auth);
-            notify('Hub Session Disconnected', 'info');
-        };
+        window.handleLogout = async () => { await signOut(auth); notify('Hub Session Disconnected', 'info'); };
 
         window.showView = (view) => {
             const main = document.getElementById('main-content');
@@ -275,24 +267,15 @@
 
                     <section class="max-w-7xl mx-auto px-6 mt-16 mb-20 grid grid-cols-1 md:grid-cols-3 gap-8 relative z-20">
                         <div class="bg-white p-8 card-shadow info-card rounded-2xl">
-                            <div class="flex items-center gap-4 mb-5">
-                                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center"><i data-lucide="activity" class="w-5 h-5"></i></div>
-                                <h3 class="text-lg font-black uppercase tracking-tight italic">Provincial Command</h3>
-                            </div>
+                            <div class="flex items-center gap-4 mb-5"><div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center"><i data-lucide="activity" class="w-5 h-5"></i></div><h3 class="text-lg font-black uppercase tracking-tight italic">Provincial Command</h3></div>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Providing LGUs with a Bird's Eye View of regional deficits for data-driven decisions.</p>
                         </div>
                         <div class="bg-white p-8 card-shadow info-card rounded-2xl">
-                            <div class="flex items-center gap-4 mb-5">
-                                <div class="w-10 h-10 bg-slate-100 text-slate-900 rounded-lg flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
-                                <h3 class="text-lg font-black uppercase tracking-tight italic">Barangay Response</h3>
-                            </div>
+                            <div class="flex items-center gap-4 mb-5"><div class="w-10 h-10 bg-slate-100 text-slate-900 rounded-lg flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5"></i></div><h3 class="text-lg font-black uppercase tracking-tight italic">Barangay Response</h3></div>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Empowering local officers with digital ledgers to track household relief loads securely.</p>
                         </div>
                         <div class="bg-white p-8 card-shadow info-card rounded-2xl">
-                            <div class="flex items-center gap-4 mb-5">
-                                <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center"><i data-lucide="shield" class="w-5 h-5"></i></div>
-                                <h3 class="text-lg font-black uppercase tracking-tight italic">Data Isolation</h3>
-                            </div>
+                            <div class="flex items-center gap-4 mb-5"><div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center"><i data-lucide="shield" class="w-5 h-5"></i></div><h3 class="text-lg font-black uppercase tracking-tight italic">Data Isolation</h3></div>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Strict multi-tenant architecture ensures municipal data remains protected and entirely isolated.</p>
                         </div>
                     </section>
@@ -303,12 +286,12 @@
                             <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-4 border-slate-200 pb-8 gap-6">
                                 <div class="text-center md:text-left space-y-2">
                                     <div class="flex items-center justify-center md:justify-start gap-4">
-                                        <i data-lucide="zap" class="text-orange-500 w-8 h-8"></i>
+                                        <i data-lucide="zap" class="text-rose-500 w-8 h-8 active-dot"></i>
                                         <h3 class="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Urgent Needs</h3>
                                     </div>
                                     <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Public Telemetry Radar</p>
                                 </div>
-                                <button onclick="openModal('donate')" class="text-sm font-black text-blue-600 uppercase tracking-widest border-2 border-blue-600 px-8 py-3 hover:bg-blue-600 hover:text-white btn-transition rounded-xl">Submit Support</button>
+                                <button onclick="openModal('donate')" class="text-sm font-black text-blue-600 uppercase tracking-widest border-2 border-blue-600 px-8 py-3 hover:bg-blue-600 hover:text-white btn-transition rounded-xl shadow-lg shadow-blue-100">Submit Support</button>
                             </div>
                             <div id="radar-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
                         </div>
@@ -319,18 +302,44 @@
         }
 
         function initRadar() {
-            const container = document.getElementById('radar-grid');
-            // Since strict Security Rules protect /municipality_data, 
-            // a public "radar" requires either an unprotected /public_requests node
-            // or mock data for public view if they are not logged in.
-            // For now, it will indicate active monitoring.
-            container.innerHTML = `
-                <div class="col-span-full py-16 bg-white border border-slate-200 rounded-2xl text-center text-slate-400 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-4">
-                    <i data-lucide="radar" class="w-10 h-10 text-blue-300 animate-pulse"></i>
-                    Radar Active: Awaiting verified telemetry from Command Hubs
-                </div>
-            `;
-            lucide.createIcons();
+            onValue(ref(db, 'urgent_needs'), (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('radar-grid');
+                if (!container) return;
+                
+                if (!data) {
+                    container.innerHTML = `<div class="col-span-full py-16 bg-white border border-slate-200 rounded-2xl text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-4"><i data-lucide="check-circle" class="w-10 h-10"></i> Radar Optimal: No immediate deficits reported.</div>`;
+                    lucide.createIcons();
+                    return;
+                }
+
+                let html = '';
+                Object.keys(data).forEach(id => {
+                    const item = data[id];
+                    const deficit = item.target - item.current;
+                    if (deficit > 0) {
+                        html += `
+                        <div class="bg-white p-8 card-shadow border-t-8 border-rose-500 rounded-2xl relative overflow-hidden group hover:-translate-y-1 btn-transition">
+                            <div class="flex justify-between items-start mb-6">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provincial Deficit</span>
+                                <div class="w-10 h-10 bg-rose-50 flex items-center justify-center text-rose-500 rounded-lg group-hover:scale-110 btn-transition"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+                            </div>
+                            <h4 class="text-2xl font-black text-slate-900 leading-none uppercase mb-2 tracking-tight italic">${item.name}</h4>
+                            <p class="text-sm font-bold text-slate-500 mb-8">Urgent Deficit: <span class="text-rose-600 font-black text-xl">${deficit}</span></p>
+                            <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
+                                <div class="bg-blue-600 h-3 rounded-full" style="width: ${(item.current / item.target) * 100}%"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <span>Secured: ${item.current}</span>
+                                <span>Target: ${item.target}</span>
+                            </div>
+                        </div>`;
+                    }
+                });
+
+                container.innerHTML = html || `<div class="col-span-full py-16 bg-white border border-slate-200 rounded-2xl text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-4"><i data-lucide="check-circle" class="w-10 h-10"></i> Radar Optimal: All broadcasted needs are currently fulfilled.</div>`;
+                lucide.createIcons();
+            });
         }
 
         function renderHotlines() {
@@ -343,38 +352,17 @@
                         <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Direct Authorized Communication Links</p>
                     </div>
                     <div class="grid grid-cols-1 gap-6">
-                        <!-- Hotline 1 -->
                         <div class="bg-white p-8 card-shadow border-l-[8px] border-blue-700 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-slate-900 hover:text-white btn-transition">
-                            <div class="space-y-1 text-center md:text-left">
-                                <p class="text-xs font-black uppercase tracking-widest text-blue-600 group-hover:text-blue-400">PDRRMO Cebu Main</p>
-                                <h3 class="text-2xl font-black italic uppercase tracking-tighter">Command Center</h3>
-                            </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-2xl font-bold tracking-tight">(032) 255-0046</span>
-                                <div class="p-4 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="phone-call" class="w-6 h-6"></i></div>
-                            </div>
+                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-blue-600 group-hover:text-blue-400">PDRRMO Cebu Main</p><h3 class="text-2xl font-black italic uppercase tracking-tighter">Command Center</h3></div>
+                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight">(032) 255-0046</span><div class="p-4 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="phone-call" class="w-6 h-6"></i></div></div>
                         </div>
-                        <!-- Hotline 2 -->
                         <div class="bg-white p-8 card-shadow border-l-[8px] border-slate-800 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-blue-700 hover:text-white btn-transition">
-                            <div class="space-y-1 text-center md:text-left">
-                                <p class="text-xs font-black uppercase tracking-widest text-slate-500 group-hover:text-blue-200">Cebu City ERUF</p>
-                                <h3 class="text-2xl font-black italic uppercase tracking-tighter">Medical Hub</h3>
-                            </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-2xl font-bold tracking-tight">(032) 233-9300</span>
-                                <div class="p-4 bg-slate-100 text-slate-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="ambulance" class="w-6 h-6"></i></div>
-                            </div>
+                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-slate-500 group-hover:text-blue-200">Cebu City ERUF</p><h3 class="text-2xl font-black italic uppercase tracking-tighter">Medical Hub</h3></div>
+                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight">(032) 233-9300</span><div class="p-4 bg-slate-100 text-slate-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="ambulance" class="w-6 h-6"></i></div></div>
                         </div>
-                        <!-- Hotline 3 -->
                         <div class="bg-white p-8 card-shadow border-l-[8px] border-rose-600 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-rose-700 hover:text-white btn-transition">
-                            <div class="space-y-1 text-center md:text-left">
-                                <p class="text-xs font-black uppercase tracking-widest text-rose-600 group-hover:text-rose-200">Red Cross Hub</p>
-                                <h3 class="text-2xl font-black italic uppercase tracking-tighter">Support Unit</h3>
-                            </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-2xl font-bold tracking-tight">(032) 253-4611</span>
-                                <div class="p-4 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="heart" class="w-6 h-6"></i></div>
-                            </div>
+                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-rose-600 group-hover:text-rose-200">Red Cross Hub</p><h3 class="text-2xl font-black italic uppercase tracking-tighter">Support Unit</h3></div>
+                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight">(032) 253-4611</span><div class="p-4 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="heart" class="w-6 h-6"></i></div></div>
                         </div>
                     </div>
                 </div>
@@ -389,11 +377,11 @@
                 <div class="max-w-7xl mx-auto px-6 space-y-8 py-12 animate-in fade-in">
                     <header class="flex flex-col md:flex-row justify-between items-center md:items-end bg-white p-8 card-shadow border-b-8 border-blue-600 rounded-2xl gap-6">
                         <div class="flex items-center gap-6">
-                            <div class="w-16 h-16 bg-slate-900 text-white rounded-xl flex items-center justify-center text-3xl font-black">${sessionProfile.municipality.charAt(0).toUpperCase()}</div>
+                            <div class="w-16 h-16 bg-slate-900 text-white rounded-xl flex items-center justify-center text-3xl font-black">${sessionProfile.municipality === 'all' ? 'HQ' : sessionProfile.municipality.charAt(0).toUpperCase()}</div>
                             <div>
                                 <p class="text-xs font-black text-blue-600 uppercase tracking-widest">Active Personnel</p>
-                                <h2 class="text-3xl font-black text-slate-900 uppercase leading-none mt-1 tracking-tight italic">${sessionProfile.municipality.replace('_', ' ')} Hub</h2>
-                                <p class="text-sm font-bold text-slate-500 mt-2 uppercase tracking-widest">${sessionProfile.role}</p>
+                                <h2 class="text-3xl font-black text-slate-900 uppercase leading-none mt-1 tracking-tight italic">${sessionProfile.municipality === 'all' ? 'Provincial Command' : sessionProfile.municipality.replace('_', ' ')} Hub</h2>
+                                <p class="text-sm font-bold text-slate-500 mt-2 uppercase tracking-widest">${sessionProfile.role.replace('_', ' ')}</p>
                             </div>
                         </div>
                     </header>
@@ -401,14 +389,156 @@
                 </div>
             `;
             
-            if (sessionProfile.role === ROLES.SUPER_ADMIN || sessionProfile.role === ROLES.ADMIN) {
-                renderAdminDash();
-            } else if (sessionProfile.role === ROLES.BARANGAY || sessionProfile.role === ROLES.LOGISTICS) {
-                renderOperationsDash();
-            }
+            if (sessionProfile.role === ROLES.SUPER_ADMIN) renderSuperAdminDash();
+            else if (sessionProfile.role === ROLES.ADMIN) renderAdminDash();
+            else renderOperationsDash();
+            
             lucide.createIcons();
         }
 
+        // ==========================================
+        // NEW SUPER ADMIN DASHBOARD LOGIC
+        // ==========================================
+        function renderSuperAdminDash() {
+            const container = document.getElementById('dash-content');
+            container.innerHTML = `
+                <div class="space-y-8">
+                    <!-- Top Row: Inventory & Urgent Needs -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 card-shadow rounded-2xl border-t-8 border-rose-500">
+                            <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4">
+                                <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2"><i data-lucide="zap" class="text-rose-500 w-5 h-5"></i> Needs Controller</h3>
+                                <button onclick="openModal('add_need')" class="text-[10px] font-black bg-rose-50 text-rose-600 px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-rose-600 hover:text-white btn-transition">Broadcast Need</button>
+                            </div>
+                            <div id="sa-urgent-needs" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                        </div>
+                        <div class="bg-slate-900 p-8 card-shadow rounded-2xl border-t-8 border-blue-500 text-white">
+                            <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-white/10 pb-4"><i data-lucide="package" class="text-blue-400 w-5 h-5"></i> Central Inventory Ledger</h3>
+                            <div id="sa-inventory" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row: Donations & Requests -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100">
+                            <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-slate-50 pb-4"><i data-lucide="heart" class="text-rose-500 w-5 h-5"></i> Public Donations Queue</h3>
+                            <div id="sa-donations" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
+                        </div>
+                        <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100">
+                            <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-slate-50 pb-4"><i data-lucide="clipboard-list" class="text-blue-600 w-5 h-5"></i> City Requisitions</h3>
+                            <div id="sa-requests" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            initSuperAdminListeners();
+        }
+
+        function initSuperAdminListeners() {
+            // Listen to Urgent Needs (This acts as the Inventory ledger too)
+            onValue(ref(db, 'urgent_needs'), (snapshot) => {
+                const data = snapshot.val();
+                globalUrgentNeeds = data || {};
+                
+                const needsContainer = document.getElementById('sa-urgent-needs');
+                const invContainer = document.getElementById('sa-inventory');
+                
+                if (!data) {
+                    needsContainer.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Active Needs</p>';
+                    invContainer.innerHTML = '<p class="text-xs text-slate-500 font-bold uppercase tracking-widest text-center py-10 col-span-2">Inventory Empty</p>';
+                    return;
+                }
+
+                let needsHtml = '';
+                let invHtml = '';
+
+                Object.keys(data).forEach(id => {
+                    const item = data[id];
+                    needsHtml += `
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                            <div>
+                                <h4 class="font-black text-slate-800 uppercase text-sm">${item.name}</h4>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Target: ${item.target}</p>
+                            </div>
+                            <span class="text-[10px] font-black uppercase ${item.target - item.current > 0 ? 'text-rose-500' : 'text-emerald-500'}">
+                                Deficit: ${item.target - item.current > 0 ? item.target - item.current : 0}
+                            </span>
+                        </div>
+                    `;
+                    invHtml += `
+                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col justify-center items-center text-center">
+                            <h4 class="font-black text-slate-300 uppercase text-xs mb-2">${item.name}</h4>
+                            <span class="text-3xl font-black text-blue-400 tracking-tight leading-none">${item.current}</span>
+                        </div>
+                    `;
+                });
+                needsContainer.innerHTML = needsHtml;
+                invContainer.innerHTML = invHtml;
+            });
+
+            // Listen to Donations Queue
+            onValue(ref(db, 'donations'), (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('sa-donations');
+                if (!data) { container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Pending Donations</p>'; return; }
+                
+                let html = '';
+                Object.keys(data).forEach(id => {
+                    const d = data[id];
+                    if(d.status === 'processed') return; // Skip processed
+                    html += `
+                        <div class="p-4 bg-rose-50/50 rounded-xl border border-rose-100 flex justify-between items-center group">
+                            <div>
+                                <h4 class="font-black text-slate-800 text-sm italic uppercase">${d.donor}</h4>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Item: <span class="text-rose-600">${d.item}</span></p>
+                            </div>
+                            <button onclick="window.prepareProcessDonation('${id}')" class="text-[9px] font-black bg-rose-600 text-white px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-rose-700 shadow-md">Process</button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">All Donations Processed</p>';
+            });
+
+            // Listen to City Requests
+            onValue(ref(db, 'requests'), (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('sa-requests');
+                if (!data) { container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Active Requisitions</p>'; return; }
+                
+                let html = '';
+                Object.keys(data).forEach(id => {
+                    const r = data[id];
+                    if(r.status === 'dispatched' || r.status === 'fulfilled') return;
+                    html += `
+                        <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 flex justify-between items-center">
+                            <div>
+                                <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${r.location.replace('_', ' ')} HUB</span>
+                                <h4 class="font-black text-slate-800 text-sm uppercase mt-1 italic">${r.items}</h4>
+                            </div>
+                            <button onclick="fulfillRequest('${id}')" class="text-[9px] font-black bg-blue-600 text-white px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-700 shadow-md">Fulfill</button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">All Requests Handled</p>';
+            });
+        }
+
+        window.prepareProcessDonation = (id) => {
+            processingDonationId = id;
+            openModal('process_donation');
+        };
+
+        window.fulfillRequest = async (id) => {
+            if(!db) return;
+            // In a full system, this would open a modal to deduct from inventory. 
+            // For now, we update status to show the super admin workflow.
+            await update(ref(db, `requests/${id}`), { status: 'dispatched' });
+            notify('Request Marked as Dispatched', 'success');
+        };
+
+        // ==========================================
+        // ADMIN DASHBOARD (City Level)
+        // ==========================================
         function renderAdminDash() {
             const container = document.getElementById('dash-content');
             container.innerHTML = `
@@ -426,6 +556,36 @@
             initAdminListeners();
         }
 
+        function initAdminListeners() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                const data = snapshot.val();
+                const pendingContainer = document.getElementById('admin-pending-users');
+                const activeContainer = document.getElementById('admin-active-users');
+                if (!data) return;
+
+                let pendingHtml = '', activeHtml = '';
+                Object.keys(data).forEach(uid => {
+                    const user = data[uid];
+                    if (user.municipality !== sessionProfile.municipality) return;
+                    
+                    const card = `
+                        <div class="p-5 bg-slate-50 rounded-xl flex justify-between items-center border border-slate-100">
+                            <div><h4 class="font-black text-slate-800 text-sm uppercase italic">${user.name || 'Unknown User'}</h4><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">${user.role.replace('_', ' ')}</p></div>
+                            ${user.status === 'pending' ? `<button onclick="approveUser('${uid}')" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-md">Approve</button>` : `<span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-md">Approved</span>`}
+                        </div>`;
+                    if (user.status === 'pending') pendingHtml += card; else activeHtml += card;
+                });
+                pendingContainer.innerHTML = pendingHtml || `<p class="text-sm font-bold text-slate-400 text-center py-6 uppercase tracking-widest">No pending requests.</p>`;
+                activeContainer.innerHTML = activeHtml || `<p class="text-sm font-bold text-slate-400 text-center py-6 uppercase tracking-widest">No active staff.</p>`;
+            });
+        }
+
+        window.approveUser = async (uid) => {
+            if(!db) return;
+            try { await update(ref(db, `users/${uid}`), { status: 'approved' }); notify('Personnel Approved', 'success'); } 
+            catch(e) { notify('Permission Denied', 'error'); }
+        };
+
         function renderOperationsDash() {
             const container = document.getElementById('dash-content');
             container.innerHTML = `
@@ -437,51 +597,9 @@
             `;
         }
 
-        function initAdminListeners() {
-            onValue(ref(db, 'users'), (snapshot) => {
-                const data = snapshot.val();
-                const pendingContainer = document.getElementById('admin-pending-users');
-                const activeContainer = document.getElementById('admin-active-users');
-                
-                if (!data) return;
-
-                let pendingHtml = '';
-                let activeHtml = '';
-
-                Object.keys(data).forEach(uid => {
-                    const user = data[uid];
-                    if (sessionProfile.role !== ROLES.SUPER_ADMIN && user.municipality !== sessionProfile.municipality) return;
-                    
-                    const card = `
-                        <div class="p-5 bg-slate-50 rounded-xl flex justify-between items-center border border-slate-100">
-                            <div>
-                                <h4 class="font-black text-slate-800 text-sm uppercase italic">${user.name || 'Unknown User'}</h4>
-                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">${user.role} | ${user.municipality.replace('_', ' ')}</p>
-                            </div>
-                            ${user.status === 'pending' ? 
-                            `<button onclick="approveUser('${uid}')" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-md">Approve</button>` 
-                            : `<span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-md">Approved</span>`}
-                        </div>`;
-                    
-                    if (user.status === 'pending') pendingHtml += card;
-                    else activeHtml += card;
-                });
-
-                pendingContainer.innerHTML = pendingHtml || `<p class="text-sm font-bold text-slate-400 text-center py-6 uppercase tracking-widest">No pending requests.</p>`;
-                activeContainer.innerHTML = activeHtml || `<p class="text-sm font-bold text-slate-400 text-center py-6 uppercase tracking-widest">No active staff.</p>`;
-            });
-        }
-
-        window.approveUser = async (uid) => {
-            if(!db) return;
-            try {
-                await update(ref(db, `users/${uid}`), { status: 'approved' });
-                notify('Personnel Approved', 'success');
-            } catch(e) {
-                notify('Permission Denied', 'error');
-            }
-        };
-
+        // ==========================================
+        // MODALS & FORMS
+        // ==========================================
         window.openModal = (type) => {
             const container = document.getElementById('modal-container');
             const title = document.getElementById('modal-title');
@@ -492,14 +610,8 @@
                 title.innerText = 'Staff Portal Access';
                 body.innerHTML = `
                 <form id="auth-form" class="space-y-5">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
-                        <input type="email" id="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold focus:border-blue-500 transition-colors" placeholder="admin@cebucity.system" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label>
-                        <input type="password" id="pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold focus:border-blue-500 transition-colors" placeholder="••••••••" required>
-                    </div>
+                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold focus:border-blue-500 transition-colors" required></div>
+                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold focus:border-blue-500 transition-colors" required></div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 mt-2 shadow-lg">Login</button>
                     <p class="text-center text-xs font-bold text-slate-500 mt-4">New Personnel? <button type="button" onclick="openModal('signup')" class="text-blue-600 font-black hover:underline">Register Here</button></p>
                 </form>`;
@@ -509,33 +621,13 @@
                 title.innerText = 'Establish Identity';
                 body.innerHTML = `
                 <form id="auth-form" class="space-y-4">
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
-                        <input type="text" id="reg-name" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500" required>
-                    </div>
+                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label><input type="text" id="reg-name" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500" required></div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Municipality</label>
-                            <select id="reg-loc" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500">
-                                ${HUBS.map(h => `<option value="${h.id}">${h.name}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Role</label>
-                            <select id="reg-role" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500">
-                                <option value="${ROLES.BARANGAY}">Barangay Officer</option>
-                                <option value="${ROLES.LOGISTICS}">Logistics</option>
-                            </select>
-                        </div>
+                        <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Municipality</label><select id="reg-loc" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500">${HUBS.map(h => `<option value="${h.id}">${h.name}</option>`).join('')}</select></div>
+                        <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Role</label><select id="reg-role" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500"><option value="${ROLES.BARANGAY}">Barangay Officer</option><option value="${ROLES.LOGISTICS}">Logistics</option></select></div>
                     </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
-                        <input type="email" id="reg-email" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500" required>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label>
-                        <input type="password" id="reg-pass" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500" required>
-                    </div>
+                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="reg-email" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500" required></div>
+                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="reg-pass" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500" required></div>
                     <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 mt-4 shadow-lg">Register Account</button>
                 </form>`;
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'signup');
@@ -544,26 +636,66 @@
                 title.innerText = 'Public Support Hub';
                 body.innerHTML = `
                 <div class="space-y-8">
-                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-100 text-center">
-                        <p class="text-xs font-black text-blue-700 uppercase tracking-widest">Physical Drop-off: Cebu Provincial Capitol</p>
-                    </div>
+                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-100 text-center"><p class="text-xs font-black text-blue-700 uppercase tracking-widest">Physical Drop-off: Cebu Provincial Capitol</p></div>
                     <form id="donate-form" class="space-y-5">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Donor / Organization Name</label>
-                            <input type="text" id="don-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Support Item(s)</label>
-                            <input type="text" id="don-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" placeholder="e.g. 10 Sacks of Rice" required>
-                        </div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Donor Name</label><input type="text" id="don-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required></div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Support Item(s)</label><input type="text" id="don-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" placeholder="e.g. 500 Sacks of Rice" required></div>
                         <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-rose-700 btn-transition mt-2">Submit Donation</button>
                     </form>
                 </div>`;
-                document.getElementById('donate-form').onsubmit = (e) => {
+                document.getElementById('donate-form').onsubmit = async (e) => {
                     e.preventDefault();
-                    // Mocking the donation submission since public writes need an unprotected DB node
+                    if(!db) return;
+                    await push(ref(db, 'donations'), { donor: document.getElementById('don-name').value, item: document.getElementById('don-item').value, status: 'pending', timestamp: Date.now() });
                     closeModal();
-                    notify('Support Confirmed! Thank you.', 'success');
+                    notify('Support Transmitted to HQ!', 'success');
+                };
+            } else if (type === 'add_need') {
+                title.innerText = 'Broadcast Urgent Need';
+                body.innerHTML = `
+                <form id="need-form" class="space-y-5">
+                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Inventory Category Name</label><input type="text" id="need-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" placeholder="e.g. Rice (Sacks)" required></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Total Needed</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required></div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Stock</label><input type="number" id="need-current" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" value="0" required></div>
+                    </div>
+                    <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-rose-700 btn-transition mt-2">Broadcast to Public</button>
+                </form>`;
+                document.getElementById('need-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    if(!db) return;
+                    await push(ref(db, 'urgent_needs'), { name: document.getElementById('need-name').value, target: parseInt(document.getElementById('need-target').value), current: parseInt(document.getElementById('need-current').value) });
+                    closeModal();
+                    notify('Need Broadcasted', 'success');
+                };
+            } else if (type === 'process_donation') {
+                title.innerText = 'Process Public Donation';
+                let options = Object.keys(globalUrgentNeeds).map(id => `<option value="${id}">${globalUrgentNeeds[id].name}</option>`).join('');
+                if(!options) options = `<option disabled>No Categories Available. Broadcast a Need first.</option>`;
+                
+                body.innerHTML = `
+                <div class="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100"><p class="text-xs font-bold text-blue-800">Convert the public text string into numeric central inventory.</p></div>
+                <form id="process-form" class="space-y-5">
+                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Match to Inventory Category</label><select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">${options}</select></div>
+                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numeric Quantity Added</label><input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required></div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-blue-700 btn-transition mt-2">Add to Central Inventory</button>
+                </form>`;
+                document.getElementById('process-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    if(!db || !processingDonationId) return;
+                    const catId = document.getElementById('proc-cat').value;
+                    const addedQty = parseInt(document.getElementById('proc-qty').value);
+                    if(!catId) { notify('Select a valid category', 'error'); return; }
+                    
+                    // Update Inventory
+                    const currentQty = globalUrgentNeeds[catId].current || 0;
+                    await update(ref(db, `urgent_needs/${catId}`), { current: currentQty + addedQty });
+                    
+                    // Mark Donation as processed
+                    await update(ref(db, `donations/${processingDonationId}`), { status: 'processed' });
+                    
+                    closeModal();
+                    notify('Inventory Updated! Deficit Recalculated.', 'success');
                 };
             }
             lucide.createIcons();
@@ -573,7 +705,6 @@
 
         async function handleAuth(e, mode) {
             e.preventDefault();
-            
             try {
                 if (mode === 'signup') {
                     const email = document.getElementById('reg-email').value;
@@ -585,29 +716,16 @@
                     const userCred = await createUserWithEmailAndPassword(auth, email, pass);
                     const uid = userCred.user.uid;
 
-                    await set(ref(db, `users/${uid}`), {
-                        name: name,
-                        email: email,
-                        role: role,
-                        municipality: municipality,
-                        status: 'pending'
-                    });
-
+                    await set(ref(db, `users/${uid}`), { name, email, role, municipality, status: 'pending' });
                     await signOut(auth);
                     closeModal();
                     notify('Registered! Pending Admin Approval.', 'info');
-
                 } else if (mode === 'login') {
-                    const email = document.getElementById('email').value;
-                    const pass = document.getElementById('pass').value;
-                    
-                    await signInWithEmailAndPassword(auth, email, pass);
+                    await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
                     closeModal();
                     notify('Authenticating...', 'info');
                 }
-            } catch (err) { 
-                notify(err.message, 'error'); 
-            }
+            } catch (err) { notify(err.message, 'error'); }
         }
 
         function notify(msg, type = 'info') {
