@@ -20,7 +20,7 @@
         
         .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid #e2e8f0; }
         .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
-        .btn-transition { transition: all 0.2s ease-in-out; }
+        .btn-transition { transition: all 0.3s ease-in-out; }
         
         .active-dot { animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
@@ -29,43 +29,55 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
 
+        /* Enhanced Relaxing Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, #e0f2fe 0%, var(--soft-bg) 100%);
-            min-height: 60vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%);
+            min-height: 70vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: var(--tech-slate);
             position: relative;
-            padding: 4rem 1.5rem;
+            padding: 5rem 1.5rem;
+            overflow: hidden; /* Keeps the glowing orbs contained */
         }
+
+        /* Ambient Background Glows */
+        .hero-glow-1 { position: absolute; top: -10%; left: -5%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 60%); filter: blur(80px); pointer-events: none; z-index: 0; }
+        .hero-glow-2 { position: absolute; bottom: -10%; right: -5%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(251, 113, 133, 0.15) 0%, transparent 60%); filter: blur(80px); pointer-events: none; z-index: 0; }
+        .hero-glow-3 { position: absolute; top: 30%; left: 25%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(167, 139, 250, 0.15) 0%, transparent 60%); filter: blur(80px); pointer-events: none; z-index: 0; }
 
         .hero-title {
             line-height: 1.1;
-            letter-spacing: 0.15em; /* Stretched effect */
+            letter-spacing: 0.15em;
             text-transform: uppercase;
             font-weight: 900;
-            font-size: clamp(2rem, 5vw, 4rem);
+            font-size: clamp(2rem, 5vw, 4.5rem);
             color: var(--tech-blue);
         }
 
         .hero-pattern {
             position: absolute;
             inset: 0;
-            background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
             background-size: 24px 24px;
-            opacity: 0.5;
+            opacity: 0.6;
             pointer-events: none;
+            z-index: 1;
         }
 
+        /* Upgraded Glass Tech Frame */
         .tech-frame {
             position: relative;
-            padding: 2rem 3rem;
-            border: 1px solid #e2e8f0;
-            background: rgba(255, 255, 255, 0.7);
+            padding: 3.5rem 4rem;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 100%);
+            border-radius: 2.5rem;
             text-align: center;
-            backdrop-blur: 5px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            z-index: 10;
         }
 
         .angled-btn {
@@ -74,13 +86,13 @@
         }
         
         .info-card { border-top: 4px solid #cbd5e1; transition: all 0.3s ease; }
-        .info-card:hover { border-top-color: var(--tech-blue); transform: translateY(-4px); }
+        .info-card:hover { border-top-color: var(--tech-blue); transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col relative text-base">
 
-    
-<nav class="glass-nav sticky top-0 z-50 px-6 py-4">
+    <!-- NAVIGATION HUB -->
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3 cursor-pointer group" onclick="showView('landing')">
                 <div class="p-2 bg-blue-700 rounded-lg text-white shadow-md group-hover:scale-105 btn-transition">
@@ -103,13 +115,13 @@
         </div>
     </nav>
 
-    
-<main id="main-content" class="flex-1 w-full">
-        
-</main>
+    <!-- MAIN VIEWPORT -->
+    <main id="main-content" class="flex-1 w-full">
+        <!-- Views injected here -->
+    </main>
 
-    
-<footer class="bg-slate-950 text-white pt-16 pb-8 border-t border-white/5 z-10 relative mt-auto">
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-white pt-16 pb-8 border-t border-white/5 z-10 relative mt-auto">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
             <div class="col-span-1 md:col-span-2 space-y-5">
                 <div class="flex items-center justify-center md:justify-start gap-3">
@@ -143,9 +155,9 @@
         </div>
     </footer>
 
-    
-<div id="modal-container" class="fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hide">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border-t-4 border-blue-600 animate-in fade-in zoom-in duration-200">
+    <!-- MODAL -->
+    <div id="modal-container" class="fixed inset-0 z-[60] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hide">
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border-t-4 border-blue-600 animate-in fade-in zoom-in duration-200">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 id="modal-title" class="text-sm font-black text-slate-800 uppercase tracking-widest">System Access</h3>
                 <button onclick="closeModal()" class="p-2 hover:bg-slate-200 rounded-full btn-transition"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -154,11 +166,11 @@
         </div>
     </div>
 
-    
-<div id="notification-hub" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3"></div>
+    <!-- TOAST HUB -->
+    <div id="notification-hub" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3"></div>
 
-    
-<script type="module">
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getDatabase, ref, set, get, onValue, push, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
@@ -196,7 +208,6 @@
 
         const ROLES = { SUPER_ADMIN: 'super_admin', ADMIN: 'admin', BARANGAY: 'officer', LOGISTICS: 'logistic' };
 
-        // Standard Categories for Inventory Mapping
         const INVENTORY_CATEGORIES = [
             "Family Food Packs",
             "Hygiene Kit",
@@ -247,7 +258,7 @@
             } else {
                 container.innerHTML = `
                     <button onclick="openModal('login')" class="text-sm font-bold text-slate-500 uppercase tracking-widest px-4 py-2 hover:text-blue-600 btn-transition">Staff Portal</button>
-                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-rose-600 px-6 py-2.5 rounded-xl shadow-lg hover:bg-rose-700 btn-transition uppercase tracking-widest ml-2">Donate</button>
+                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-rose-600 px-6 py-2.5 rounded-full shadow-lg hover:bg-rose-700 btn-transition uppercase tracking-widest ml-2 hover:-translate-y-0.5">Donate</button>
                 `;
             }
             lucide.createIcons();
@@ -272,49 +283,53 @@
             main.innerHTML = `
                 <div class="animate-in fade-in duration-700">
                     <section class="hero-section">
+                        <div class="hero-glow-1"></div>
+                        <div class="hero-glow-2"></div>
+                        <div class="hero-glow-3"></div>
                         <div class="hero-pattern"></div>
-                        <div class="tech-frame mb-10 z-10">
+                        
+                        <div class="tech-frame mb-10 w-full max-w-5xl">
                             <h2 class="hero-title">
-                                DISASTER RELIEF <br> & EMERGENCY <br> <span class="text-tech-slate/50">RESOURCE</span> <br> ALLOCATION
+                                DISASTER RELIEF <br> & EMERGENCY <br> RESOURCE <br> ALLOCATION
                             </h2>
                         </div>
-                        <p class="text-slate-700/90 text-base md:text-lg font-medium max-w-2xl mb-10 leading-relaxed text-center italic z-10">
+                        <p class="text-slate-600 text-base md:text-xl font-medium max-w-3xl mb-12 leading-relaxed text-center italic z-10 px-4">
                             Centralized telemetry establishing secure resource links across all Cebu hubs. Synchronizing relief assets in real-time to ensure no district is left behind.
                         </p>
                         <div class="flex flex-wrap justify-center gap-6 z-10">
-                            <button onclick="showView('hotlines')" class="bg-white text-blue-700 angled-btn font-black text-sm uppercase tracking-widest hover:bg-slate-100 shadow-xl transition-transform hover:-translate-y-1">Cebu Hotlines</button>
-                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-transparent border-2 border-slate-300 text-slate-700 angled-btn font-black text-sm uppercase tracking-widest hover:bg-white/10 transition-transform hover:-translate-y-1">View Urgent Needs</button>
+                            <button onclick="showView('hotlines')" class="bg-blue-600 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-600/30 transition-all hover:-translate-y-1">Cebu Hotlines</button>
+                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border-2 border-slate-200 text-slate-700 px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:border-slate-300 transition-all hover:-translate-y-1 shadow-md">View Urgent Needs</button>
                         </div>
                     </section>
 
-                    <section class="bg-white py-20 px-6 relative z-20 shadow-inner">
+                    <section class="bg-white py-24 px-6 relative z-20 border-t border-b border-slate-200">
                         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div class="bg-soft-bg p-8 card-shadow info-card rounded-2xl">
-                                <div class="flex items-center gap-4 mb-5"><div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center"><i data-lucide="activity" class="w-5 h-5"></i></div><h3 class="text-lg font-black uppercase tracking-tight italic">Provincial Command</h3></div>
+                            <div class="bg-soft-bg p-8 md:p-10 card-shadow info-card rounded-[2rem]">
+                                <div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center"><i data-lucide="activity" class="w-7 h-7"></i></div><h3 class="text-xl font-black uppercase tracking-tight italic text-slate-800">Provincial<br>Command</h3></div>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">Providing LGUs with a Bird's Eye View of regional deficits for data-driven decisions.</p>
                             </div>
-                            <div class="bg-soft-bg p-8 card-shadow info-card rounded-2xl">
-                                <div class="flex items-center gap-4 mb-5"><div class="w-10 h-10 bg-slate-100 text-slate-900 rounded-lg flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5"></i></div><h3 class="text-lg font-black uppercase tracking-tight italic">Barangay Response</h3></div>
+                            <div class="bg-soft-bg p-8 md:p-10 card-shadow info-card rounded-[2rem]">
+                                <div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 bg-slate-200 text-slate-900 rounded-2xl flex items-center justify-center"><i data-lucide="map-pin" class="w-7 h-7"></i></div><h3 class="text-xl font-black uppercase tracking-tight italic text-slate-800">Barangay<br>Response</h3></div>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">Empowering local officers with digital ledgers to track household relief loads securely.</p>
                             </div>
-                            <div class="bg-soft-bg p-8 card-shadow info-card rounded-2xl">
-                                <div class="flex items-center gap-4 mb-5"><div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center"><i data-lucide="shield" class="w-5 h-5"></i></div><h3 class="text-lg font-black uppercase tracking-tight italic">Data Isolation</h3></div>
+                            <div class="bg-soft-bg p-8 md:p-10 card-shadow info-card rounded-[2rem]">
+                                <div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center"><i data-lucide="shield" class="w-7 h-7"></i></div><h3 class="text-xl font-black uppercase tracking-tight italic text-slate-800">Data<br>Isolation</h3></div>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">Strict multi-tenant architecture ensures municipal data remains protected and entirely isolated.</p>
                             </div>
                         </div>
                     </section>
 
-                    <section id="urgent-needs" class="bg-section-separator py-20 px-6 scroll-mt-20 border-t border-slate-200">
-                        <div class="max-w-7xl mx-auto space-y-12">
-                            <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-4 border-slate-300 pb-8 gap-6">
-                                <div class="text-center md:text-left space-y-2">
+                    <section id="urgent-needs" class="bg-section-separator py-24 px-6 scroll-mt-20">
+                        <div class="max-w-7xl mx-auto space-y-16">
+                            <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-4 border-slate-200 pb-8 gap-6">
+                                <div class="text-center md:text-left space-y-3">
                                     <div class="flex items-center justify-center md:justify-start gap-4">
-                                        <i data-lucide="zap" class="text-rose-500 w-8 h-8 active-dot"></i>
-                                        <h3 class="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Urgent Needs</h3>
+                                        <i data-lucide="zap" class="text-rose-500 w-10 h-10 active-dot"></i>
+                                        <h3 class="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Urgent Needs</h3>
                                     </div>
-                                    <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Public Telemetry Radar</p>
+                                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Public Telemetry Radar</p>
                                 </div>
-                                <button onclick="openModal('donate')" class="text-sm font-black text-blue-600 uppercase tracking-widest border-2 border-blue-600 px-8 py-3 hover:bg-blue-600 hover:text-white btn-transition rounded-xl shadow-lg shadow-blue-100">Submit Support</button>
+                                <button onclick="openModal('donate')" class="text-sm font-black text-blue-600 uppercase tracking-widest border-2 border-blue-600 px-8 py-4 hover:bg-blue-600 hover:text-white btn-transition rounded-full shadow-lg shadow-blue-100 hover:-translate-y-1">Submit Support</button>
                             </div>
                             <div id="radar-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
                         </div>
@@ -331,7 +346,7 @@
                 if (!container) return;
                 
                 if (!data) {
-                    container.innerHTML = `<div class="col-span-full py-16 bg-white border border-slate-200 rounded-2xl text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-4"><i data-lucide="check-circle" class="w-10 h-10"></i> Radar Optimal: No immediate deficits reported.</div>`;
+                    container.innerHTML = `<div class="col-span-full py-16 bg-white border border-slate-200 rounded-[2rem] text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-4"><i data-lucide="check-circle" class="w-10 h-10"></i> Radar Optimal: No immediate deficits reported.</div>`;
                     lucide.createIcons();
                     return;
                 }
@@ -342,13 +357,13 @@
                     const deficit = item.target - item.current;
                     if (deficit > 0) {
                         html += `
-                        <div class="bg-white p-8 card-shadow border-t-8 border-rose-500 rounded-2xl relative overflow-hidden group hover:-translate-y-1 btn-transition">
+                        <div class="bg-white p-8 card-shadow border-t-8 border-rose-500 rounded-[2rem] relative overflow-hidden group hover:-translate-y-2 btn-transition">
                             <div class="flex justify-between items-start mb-6">
                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provincial Deficit</span>
-                                <div class="w-10 h-10 bg-rose-50 flex items-center justify-center text-rose-500 rounded-lg group-hover:scale-110 btn-transition"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+                                <div class="w-12 h-12 bg-rose-50 flex items-center justify-center text-rose-500 rounded-xl group-hover:scale-110 btn-transition"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
                             </div>
                             <h4 class="text-2xl font-black text-slate-900 leading-none uppercase mb-2 tracking-tighter italic">${item.name}</h4>
-                            <p class="text-sm font-bold text-slate-600 mb-8">Urgent Deficit: <span class="text-rose-600 font-black text-xl">${deficit}</span></p>
+                            <p class="text-sm font-bold text-slate-600 mb-8">Urgent Deficit: <span class="text-rose-600 font-black text-2xl ml-1">${deficit}</span></p>
                             <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
                                 <div class="bg-blue-600 h-3 rounded-full" style="width: ${(item.current / item.target) * 100}%"></div>
                             </div>
@@ -360,7 +375,7 @@
                     }
                 });
 
-                container.innerHTML = html || `<div class="col-span-full py-16 bg-white border border-slate-200 rounded-2xl text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-4"><i data-lucide="check-circle" class="w-10 h-10"></i> Radar Optimal: All broadcasted needs are currently fulfilled.</div>`;
+                container.innerHTML = html || `<div class="col-span-full py-16 bg-white border border-slate-200 rounded-[2rem] text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-4"><i data-lucide="check-circle" class="w-10 h-10"></i> Radar Optimal: All broadcasted needs are currently fulfilled.</div>`;
                 lucide.createIcons();
             });
         }
@@ -368,24 +383,24 @@
         function renderHotlines() {
             const main = document.getElementById('main-content');
             main.innerHTML = `
-                <div class="max-w-4xl mx-auto space-y-12 animate-in fade-in py-24 px-6 bg-white rounded-3xl mt-12 mb-12 shadow-inner border border-slate-100">
+                <div class="max-w-4xl mx-auto space-y-12 animate-in fade-in py-24 px-6">
                     <div class="text-center space-y-3">
                         <div class="inline-block p-4 bg-blue-50 text-blue-700 rounded-full mb-4 border-4 border-blue-100"><i data-lucide="phone-forwarded" class="w-8 h-8"></i></div>
                         <h2 class="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tighter italic">Cebu Emergency Channels</h2>
                         <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Direct Authorized Communication Links</p>
                     </div>
                     <div class="grid grid-cols-1 gap-6">
-                        <div class="bg-soft-bg p-8 card-shadow border-l-[8px] border-blue-700 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-slate-900 hover:text-white btn-transition">
-                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-blue-600 group-hover:text-blue-400">PDRRMO Cebu Main</p><h3 class="text-2xl font-black italic uppercase tracking-tighter leading-tight">Command Center</h3></div>
-                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-white">(032) 255-0046</span><div class="p-4 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-white/10 group-hover:text-white btn-transition"><i data-lucide="phone-call" class="w-6 h-6"></i></div></div>
+                        <div class="bg-white p-8 card-shadow border-l-[8px] border-blue-700 rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-slate-900 hover:text-white btn-transition hover:-translate-y-1">
+                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-blue-600 group-hover:text-blue-400">PDRRMO Cebu Main</p><h3 class="text-2xl font-black italic uppercase tracking-tighter">Command Center</h3></div>
+                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight">(032) 255-0046</span><div class="p-4 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="phone-call" class="w-6 h-6"></i></div></div>
                         </div>
-                        <div class="bg-soft-bg p-8 card-shadow border-l-[8px] border-slate-800 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-blue-700 hover:text-white btn-transition">
-                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-slate-500 group-hover:text-blue-200">Cebu City ERUF</p><h3 class="text-2xl font-black italic uppercase tracking-tighter leading-tight">Medical Hub</h3></div>
-                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-white">(032) 233-9300</span><div class="p-4 bg-slate-100 text-slate-600 rounded-xl group-hover:bg-white/10 group-hover:text-white btn-transition"><i data-lucide="ambulance" class="w-6 h-6"></i></div></div>
+                        <div class="bg-white p-8 card-shadow border-l-[8px] border-slate-800 rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-blue-700 hover:text-white btn-transition hover:-translate-y-1">
+                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-slate-500 group-hover:text-blue-200">Cebu City ERUF</p><h3 class="text-2xl font-black italic uppercase tracking-tighter">Medical Hub</h3></div>
+                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight">(032) 233-9300</span><div class="p-4 bg-slate-100 text-slate-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="ambulance" class="w-6 h-6"></i></div></div>
                         </div>
-                        <div class="bg-soft-bg p-8 card-shadow border-l-[8px] border-rose-600 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-rose-700 hover:text-white btn-transition">
-                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-rose-600 group-hover:text-rose-200">Red Cross Hub</p><h3 class="text-2xl font-black italic uppercase tracking-tighter leading-tight">Support Unit</h3></div>
-                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-white">(032) 253-4611</span><div class="p-4 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-white/10 group-hover:text-white btn-transition"><i data-lucide="heart" class="w-6 h-6"></i></div></div>
+                        <div class="bg-white p-8 card-shadow border-l-[8px] border-rose-600 rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-rose-700 hover:text-white btn-transition hover:-translate-y-1">
+                            <div class="space-y-1 text-center md:text-left"><p class="text-xs font-black uppercase tracking-widest text-rose-600 group-hover:text-rose-200">Red Cross Hub</p><h3 class="text-2xl font-black italic uppercase tracking-tighter">Support Unit</h3></div>
+                            <div class="flex items-center gap-6"><span class="text-2xl font-bold tracking-tight">(032) 253-4611</span><div class="p-4 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-white/10 group-hover:text-white"><i data-lucide="heart" class="w-6 h-6"></i></div></div>
                         </div>
                     </div>
                 </div>
@@ -398,12 +413,12 @@
             const main = document.getElementById('main-content');
             main.innerHTML = `
                 <div class="max-w-7xl mx-auto px-6 space-y-8 py-12 animate-in fade-in">
-                    <header class="flex flex-col md:flex-row justify-between items-center md:items-end bg-white p-8 card-shadow border border-slate-100 border-b-8 border-b-blue-600 rounded-2xl gap-6 shadow-inner">
+                    <header class="flex flex-col md:flex-row justify-between items-center md:items-end bg-white p-8 card-shadow border-b-8 border-blue-600 rounded-[2rem] gap-6">
                         <div class="flex items-center gap-6">
-                            <div class="w-16 h-16 bg-slate-900 text-white rounded-xl flex items-center justify-center text-3xl font-black shadow-md">${sessionProfile.municipality === 'all' ? 'HQ' : sessionProfile.municipality.charAt(0).toUpperCase()}</div>
+                            <div class="w-16 h-16 bg-slate-900 text-white rounded-xl flex items-center justify-center text-3xl font-black">${sessionProfile.municipality === 'all' ? 'HQ' : sessionProfile.municipality.charAt(0).toUpperCase()}</div>
                             <div>
-                                <p class="text-xs font-black text-blue-600 uppercase tracking-widest mb-1">Active Personnel</p>
-                                <h2 class="text-3xl font-black text-slate-900 uppercase leading-none tracking-tighter italic">${sessionProfile.municipality === 'all' ? 'Provincial Command' : sessionProfile.municipality.replace('_', ' ')} Hub</h2>
+                                <p class="text-xs font-black text-blue-600 uppercase tracking-widest">Active Personnel</p>
+                                <h2 class="text-3xl font-black text-slate-900 uppercase leading-none mt-1 tracking-tight italic">${sessionProfile.municipality === 'all' ? 'Provincial Command' : sessionProfile.municipality.replace('_', ' ')} Hub</h2>
                                 <p class="text-sm font-bold text-slate-500 mt-2 uppercase tracking-widest">${sessionProfile.role.replace('_', ' ')}</p>
                             </div>
                         </div>
@@ -423,29 +438,26 @@
             const container = document.getElementById('dash-content');
             container.innerHTML = `
                 <div class="space-y-8">
-                    
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100 border-t-8 border-t-rose-500 shadow-inner">
-                            <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4 gap-4 flex-wrap">
-                                <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="zap" class="text-rose-500 w-6 h-6"></i> Needs Controller</h3>
-                                <button onclick="openModal('add_need')" class="text-[10px] font-black bg-rose-50 text-rose-600 px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-rose-600 hover:text-white btn-transition shadow-sm">Broadcast Need</button>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 card-shadow rounded-[2rem] border-t-8 border-rose-500">
+                            <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4">
+                                <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2"><i data-lucide="zap" class="text-rose-500 w-5 h-5"></i> Needs Controller</h3>
+                                <button onclick="openModal('add_need')" class="text-[10px] font-black bg-rose-50 text-rose-600 px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-rose-600 hover:text-white btn-transition">Broadcast Need</button>
                             </div>
                             <div id="sa-urgent-needs" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
-                        <div class="bg-slate-900 p-8 card-shadow rounded-2xl border-t-8 border-t-blue-500 text-white shadow-xl shadow-slate-900/20">
-                            <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-white/10 pb-4"><i data-lucide="package" class="text-blue-400 w-6 h-6"></i> Central Inventory Ledger</h3>
+                        <div class="bg-slate-900 p-8 card-shadow rounded-[2rem] border-t-8 border-blue-500 text-white">
+                            <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-white/10 pb-4"><i data-lucide="package" class="text-blue-400 w-5 h-5"></i> Central Inventory Ledger</h3>
                             <div id="sa-inventory" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
                     </div>
-
-                    
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100 shadow-inner">
-                            <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4"><i data-lucide="heart" class="text-rose-500 w-6 h-6"></i> Public Donations Queue</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 card-shadow rounded-[2rem] border border-slate-100">
+                            <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-slate-50 pb-4"><i data-lucide="heart" class="text-rose-500 w-5 h-5"></i> Public Donations Queue</h3>
                             <div id="sa-donations" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
-                        <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100 shadow-inner">
-                            <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4"><i data-lucide="clipboard-list" class="text-blue-600 w-6 h-6"></i> City Requisitions</h3>
+                        <div class="bg-white p-8 card-shadow rounded-[2rem] border border-slate-100">
+                            <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-slate-50 pb-4"><i data-lucide="clipboard-list" class="text-blue-600 w-5 h-5"></i> City Requisitions</h3>
                             <div id="sa-requests" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
                     </div>
@@ -464,7 +476,7 @@
                 
                 if (!data) {
                     needsContainer.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Active Needs</p>';
-                    invContainer.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10 col-span-2">Inventory Empty</p>';
+                    invContainer.innerHTML = '<p class="text-xs text-slate-500 font-bold uppercase tracking-widest text-center py-10 col-span-2">Inventory Empty</p>';
                     return;
                 }
 
@@ -474,20 +486,20 @@
                 Object.keys(data).forEach(id => {
                     const item = data[id];
                     needsHtml += `
-                        <div class="p-5 bg-soft-bg rounded-xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
                             <div>
-                                <h4 class="font-black text-slate-800 uppercase text-base tracking-tight">${item.name}</h4>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Target: ${item.target}</p>
+                                <h4 class="font-black text-slate-800 uppercase text-sm">${item.name}</h4>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Target: ${item.target}</p>
                             </div>
-                            <span class="text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border ${item.target - item.current > 0 ? 'text-rose-600 bg-rose-50 border-rose-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'}">
+                            <span class="text-[10px] font-black uppercase ${item.target - item.current > 0 ? 'text-rose-500' : 'text-emerald-500'}">
                                 Deficit: ${item.target - item.current > 0 ? item.target - item.current : 0}
                             </span>
                         </div>
                     `;
                     invHtml += `
-                        <div class="p-5 bg-white/5 rounded-2xl border border-white/10 flex flex-col justify-center items-center text-center hover:bg-white/10 btn-transition">
-                            <h4 class="font-black text-slate-100 uppercase text-sm mb-2 leading-tight tracking-tight">${item.name}</h4>
-                            <span class="text-4xl font-black text-white tracking-tighter leading-none drop-shadow-md">${item.current}</span>
+                        <div class="p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col justify-center items-center text-center">
+                            <h4 class="font-black text-slate-300 uppercase text-xs mb-2">${item.name}</h4>
+                            <span class="text-3xl font-black text-blue-400 tracking-tight leading-none">${item.current}</span>
                         </div>
                     `;
                 });
@@ -505,12 +517,12 @@
                     const d = data[id];
                     if(d.status === 'processed') return; 
                     html += `
-                        <div class="p-5 bg-soft-bg rounded-xl border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-md btn-transition">
+                        <div class="p-4 bg-rose-50/50 rounded-xl border border-rose-100 flex justify-between items-center group">
                             <div>
-                                <h4 class="font-black text-slate-800 text-base italic uppercase tracking-tight">${d.donor}</h4>
-                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">Item: <span class="text-rose-600 font-black">${d.item}</span></p>
+                                <h4 class="font-black text-slate-800 text-sm italic uppercase">${d.donor}</h4>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Item: <span class="text-rose-600">${d.item}</span></p>
                             </div>
-                            <button onclick="window.prepareProcessDonation('${id}')" class="text-[10px] font-black bg-rose-600 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-rose-700 shadow-md shadow-rose-600/20 btn-transition hover:-translate-y-0.5">Process</button>
+                            <button onclick="window.prepareProcessDonation('${id}')" class="text-[9px] font-black bg-rose-600 text-white px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-rose-700 shadow-md">Process</button>
                         </div>
                     `;
                 });
@@ -527,12 +539,12 @@
                     const r = data[id];
                     if(r.status === 'dispatched' || r.status === 'fulfilled') return;
                     html += `
-                        <div class="p-5 bg-soft-bg rounded-xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
+                        <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 flex justify-between items-center">
                             <div>
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${r.location.replace('_', ' ')} HUB</span>
-                                <h4 class="font-black text-slate-800 text-base uppercase mt-1.5 italic tracking-tight">${r.items}</h4>
+                                <h4 class="font-black text-slate-800 text-sm uppercase mt-1 italic">${r.items}</h4>
                             </div>
-                            <button onclick="fulfillRequest('${id}')" class="text-[10px] font-black bg-blue-600 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-700 shadow-md shadow-blue-600/20 btn-transition hover:-translate-y-0.5">Fulfill</button>
+                            <button onclick="fulfillRequest('${id}')" class="text-[9px] font-black bg-blue-600 text-white px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-700 shadow-md">Fulfill</button>
                         </div>
                     `;
                 });
@@ -555,12 +567,12 @@
             const container = document.getElementById('dash-content');
             container.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100 shadow-inner">
-                        <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4"><i data-lucide="users" class="w-6 h-6 text-blue-600"></i> Pending Approvals</h3>
+                    <div class="bg-white p-8 card-shadow rounded-[2rem] border border-slate-100">
+                        <h3 class="text-lg font-black uppercase mb-6 flex items-center gap-3 border-b-2 border-slate-50 pb-4 italic tracking-tight"><i data-lucide="users" class="w-5 h-5 text-blue-600"></i> Pending Approvals</h3>
                         <div id="admin-pending-users" class="space-y-4"></div>
                     </div>
-                    <div class="bg-white p-8 card-shadow rounded-2xl border border-slate-100 shadow-inner">
-                        <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4"><i data-lucide="shield-check" class="w-6 h-6 text-emerald-600"></i> Active Personnel</h3>
+                    <div class="bg-white p-8 card-shadow rounded-[2rem] border border-slate-100">
+                        <h3 class="text-lg font-black uppercase mb-6 flex items-center gap-3 border-b-2 border-slate-50 pb-4 italic tracking-tight"><i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i> Active Personnel</h3>
                         <div id="admin-active-users" class="space-y-4"></div>
                     </div>
                 </div>
@@ -581,14 +593,14 @@
                     if (user.municipality !== sessionProfile.municipality) return;
                     
                     const card = `
-                        <div class="p-5 bg-soft-bg rounded-xl flex justify-between items-center border border-slate-100">
-                            <div><h4 class="font-black text-slate-800 text-base uppercase tracking-tight italic">${user.name || 'Unknown User'}</h4><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">${user.role.replace('_', ' ')}</p></div>
-                            ${user.status === 'pending' ? `<button onclick="approveUser('${uid}')" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-md shadow-blue-600/20 btn-transition">Approve</button>` : `<span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-4 py-2 rounded-lg">Approved</span>`}
+                        <div class="p-5 bg-slate-50 rounded-xl flex justify-between items-center border border-slate-100">
+                            <div><h4 class="font-black text-slate-800 text-sm uppercase italic">${user.name || 'Unknown User'}</h4><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">${user.role.replace('_', ' ')}</p></div>
+                            ${user.status === 'pending' ? `<button onclick="approveUser('${uid}')" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-md">Approve</button>` : `<span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-md">Approved</span>`}
                         </div>`;
                     if (user.status === 'pending') pendingHtml += card; else activeHtml += card;
                 });
-                pendingContainer.innerHTML = pendingHtml || `<p class="text-sm font-bold text-slate-400 text-center py-8 uppercase tracking-widest">No pending requests.</p>`;
-                activeContainer.innerHTML = activeHtml || `<p class="text-sm font-bold text-slate-400 text-center py-8 uppercase tracking-widest">No active staff.</p>`;
+                pendingContainer.innerHTML = pendingHtml || `<p class="text-sm font-bold text-slate-400 text-center py-6 uppercase tracking-widest">No pending requests.</p>`;
+                activeContainer.innerHTML = activeHtml || `<p class="text-sm font-bold text-slate-400 text-center py-6 uppercase tracking-widest">No active staff.</p>`;
             });
         }
 
@@ -601,10 +613,10 @@
         function renderOperationsDash() {
             const container = document.getElementById('dash-content');
             container.innerHTML = `
-                <div class="bg-white p-10 card-shadow rounded-2xl border border-slate-100 text-center py-24 shadow-inner">
+                <div class="bg-white p-10 card-shadow rounded-[2rem] border border-slate-100 text-center py-24">
                     <i data-lucide="check-circle" class="w-16 h-16 text-emerald-500 mx-auto mb-6"></i>
-                    <h3 class="text-3xl font-black uppercase text-slate-800 tracking-tighter italic mb-3">Clearance Granted</h3>
-                    <p class="text-base font-medium text-slate-500 leading-relaxed max-w-lg mx-auto">Connected to the <span class="text-slate-900 font-bold uppercase">${sessionProfile.municipality.replace('_', ' ')}</span> secure endpoint. <br> Operating under established data isolation protocols.</p>
+                    <h3 class="text-2xl font-black uppercase text-slate-800 tracking-tight italic">Clearance Granted</h3>
+                    <p class="text-sm font-bold text-slate-500 mt-4 leading-relaxed">Connected to the <span class="text-slate-900">${sessionProfile.municipality.replace('_', ' ')}</span> secure endpoint. <br> Operating under established data isolation protocols.</p>
                 </div>
             `;
         }
@@ -624,7 +636,7 @@
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-bold focus:border-blue-500 transition-colors shadow-sm" required></div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-bold focus:border-blue-500 transition-colors shadow-sm" required></div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 mt-2 shadow-xl shadow-blue-600/20 hover:-translate-y-0.5 btn-transition">Login</button>
-                    <p class="text-center text-xs font-bold text-slate-500 mt-4">New Personnel? <button type="button" onclick="openModal('signup')" class="text-blue-600 font-black hover:underline hover:text-blue-800 transition-colors">Register Here</button></p>
+                    <p class="text-center text-xs font-bold text-slate-500 mt-4">New Personnel? <button type="button" onclick="openModal('signup')" class="text-blue-600 font-black hover:underline transition-colors">Register Here</button></p>
                 </form>`;
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'login');
             
@@ -632,14 +644,14 @@
                 title.innerText = 'Establish Identity';
                 body.innerHTML = `
                 <form id="auth-form" class="space-y-4">
-                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label><input type="text" id="reg-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all" required></div>
+                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label><input type="text" id="reg-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm" required></div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Municipality</label><select id="reg-loc" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all">${HUBS.map(h => `<option value="${h.id}">${h.name}</option>`).join('')}</select></div>
-                        <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Role</label><select id="reg-role" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all"><option value="${ROLES.BARANGAY}">Barangay Officer</option><option value="${ROLES.LOGISTICS}">Logistics</option></select></div>
+                        <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Municipality</label><select id="reg-loc" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm">${HUBS.map(h => `<option value="${h.id}">${h.name}</option>`).join('')}</select></div>
+                        <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Role</label><select id="reg-role" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"><option value="${ROLES.BARANGAY}">Barangay Officer</option><option value="${ROLES.LOGISTICS}">Logistics</option></select></div>
                     </div>
-                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="reg-email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all" required></div>
-                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="reg-pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all" required></div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 mt-6 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition">Register Account</button>
+                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="reg-email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm" required></div>
+                    <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="reg-pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm" required></div>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 mt-4 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition">Register Account</button>
                 </form>`;
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'signup');
             
@@ -647,10 +659,10 @@
                 title.innerText = 'Public Support Hub';
                 body.innerHTML = `
                 <div class="space-y-8">
-                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-100 text-center"><p class="text-xs font-black text-blue-700 uppercase tracking-widest">Physical Drop-off: Cebu Provincial Capitol</p></div>
+                    <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 text-center"><p class="text-xs font-black text-blue-700 uppercase tracking-widest">Physical Drop-off: Cebu Provincial Capitol</p></div>
                     <form id="donate-form" class="space-y-5">
-                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Donor Name</label><input type="text" id="don-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required></div>
-                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Support Item(s)</label><input type="text" id="don-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="e.g. 500 Sacks of Rice" required></div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Donor Name</label><input type="text" id="don-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all shadow-sm" required></div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Support Item(s)</label><input type="text" id="don-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all shadow-sm" placeholder="e.g. 500 Sacks of Rice" required></div>
                         <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 hover:-translate-y-0.5 btn-transition mt-4">Submit Donation</button>
                     </form>
                 </div>`;
@@ -665,11 +677,11 @@
             } else if (type === 'add_need') {
                 title.innerText = 'Broadcast Urgent Need';
                 body.innerHTML = `
-                <form id="need-form" class="space-y-6">
-                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Name / Category</label><input type="text" id="need-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="e.g. Rice (Sacks)" required></div>
+                <form id="need-form" class="space-y-5">
+                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Name / Category</label><input type="text" id="need-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all shadow-sm" placeholder="e.g. Rice (Sacks)" required></div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Total Needed</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required></div>
-                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Stock</label><input type="number" id="need-current" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" value="0" required></div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Total Needed</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all shadow-sm" required></div>
+                        <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Stock</label><input type="number" id="need-current" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all shadow-sm" value="0" required></div>
                     </div>
                     <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 hover:-translate-y-0.5 btn-transition mt-4">Broadcast to Public</button>
                 </form>`;
@@ -686,14 +698,14 @@
             } else if (type === 'process_donation') {
                 title.innerText = 'Process Public Donation';
                 body.innerHTML = `
-                <form id="process-form" class="space-y-6 mt-2">
+                <form id="process-form" class="space-y-5 mt-2">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                        <select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all">${catOptions}</select>
+                        <select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all shadow-sm">${catOptions}</select>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Quantity Added</label>
-                        <input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required>
+                        <input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all shadow-sm" required>
                     </div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4">Add to Central Inventory</button>
                 </form>`;
@@ -766,7 +778,7 @@
             const div = document.createElement('div');
             const icons = { success: 'check-circle', error: 'alert-triangle', info: 'info' };
             const bg = { success: 'bg-emerald-600', error: 'bg-rose-600', info: 'bg-slate-800' };
-            div.className = `${bg[type]} text-white px-5 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-in fade-in duration-200`;
+            div.className = `${bg[type]} text-white px-5 py-4 rounded-2xl shadow-xl flex items-center gap-3 animate-in fade-in duration-200`;
             div.innerHTML = `<i data-lucide="${icons[type]}" class="w-5 h-5"></i> <span class="text-[11px] font-black uppercase tracking-wider">${msg}</span>`;
             hub.appendChild(div);
             lucide.createIcons();
