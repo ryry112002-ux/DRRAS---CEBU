@@ -20,7 +20,7 @@
         
         .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
         .card-shadow { box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05); }
-        .btn-transition { transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+        .btn-transition { transition: all 0.2s ease-in-out; }
         
         .active-dot { animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 70, 239, 0.4); } 50% { opacity: 0.7; transform: scale(1.1); box-shadow: 0 0 0 10px rgba(217, 70, 239, 0); } 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 70, 239, 0); } }
@@ -83,11 +83,17 @@
             background-image: radial-gradient(rgba(15, 23, 42, 0.04) 1.5px, transparent 1.5px);
             background-size: 24px 24px;
         }
+        
+        /* Forces buttons to always be clickable above decorative backgrounds */
+        .interactive-element {
+            position: relative;
+            z-index: 50;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col relative text-base">
 
-    <!-- NAVIGATION HUB -->
     <nav class="glass-nav sticky top-0 z-50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3 cursor-pointer group" onclick="sessionProfile ? showView('dashboard') : showView('landing')">
@@ -111,12 +117,9 @@
         </div>
     </nav>
 
-    <!-- MAIN VIEWPORT -->
     <main id="main-content" class="flex-1 w-full">
-        <!-- Views injected here -->
-    </main>
+        </main>
 
-    <!-- FOOTER -->
     <footer class="bg-slate-950 text-white pt-20 pb-10 border-t border-white/5 z-10 relative mt-auto">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16 text-center md:text-left">
             <div class="col-span-1 md:col-span-2 space-y-6">
@@ -151,21 +154,18 @@
         </div>
     </footer>
 
-    <!-- MODAL -->
-    <div id="modal-container" class="fixed inset-0 z-[60] bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 hide transition-opacity">
+    <div id="modal-container" class="fixed inset-0 z-[70] bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 hide transition-opacity">
         <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-300">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-sm">
                 <h3 id="modal-title" class="text-sm font-black text-slate-900 uppercase tracking-widest">System Access</h3>
-                <button onclick="closeModal()" type="button" class="p-2.5 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full btn-transition relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <button onclick="closeModal()" type="button" class="p-2.5 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full btn-transition interactive-element"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="modal-body" class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar"></div>
         </div>
     </div>
 
-    <!-- TOAST HUB -->
     <div id="notification-hub" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- FIREBASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -187,8 +187,10 @@
 
         let sessionProfile = null;
         let globalInventory = {}; 
-        let adminHubInvOptions = ''; // To hold local hub inventory for dropdowns
-        let officerBrgyInvOptions = ''; // To hold specific barangay inventory for dropdowns
+        let localHubInventory = {};
+        
+        let adminHubInvOptions = ''; 
+        let officerBrgyInvOptions = ''; 
         
         let processingDonationId = null; 
         let processingRequestId = null; 
@@ -269,15 +271,15 @@
                             <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${ROLE_DISPLAY_NAMES[sessionProfile.role] || sessionProfile.role}</p>
                             <p class="text-sm font-black text-slate-900 uppercase tracking-tight">${sessionProfile.municipality === 'all' ? 'Provincial HQ' : sessionProfile.municipality.replace('_', ' ')}</p>
                         </div>
-                        <button onclick="handleLogout()" class="px-6 py-2.5 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-full text-xs font-black uppercase tracking-widest border border-slate-200 shadow-sm btn-transition pointer-events-auto">
+                        <button onclick="handleLogout()" class="px-6 py-2.5 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-full text-xs font-black uppercase tracking-widest border border-slate-200 shadow-sm btn-transition interactive-element">
                             Log Out
                         </button>
                     </div>
                 `;
             } else {
                 container.innerHTML = `
-                    <button onclick="openModal('login')" class="text-sm font-black text-slate-500 uppercase tracking-widest px-4 py-2 hover:text-slate-900 btn-transition pointer-events-auto">Staff Portal</button>
-                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-3 rounded-full shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-0.5 btn-transition uppercase tracking-widest ml-2 pointer-events-auto cursor-pointer relative z-50">Donate</button>
+                    <button onclick="openModal('login')" class="text-sm font-black text-slate-500 uppercase tracking-widest px-4 py-2 hover:text-slate-900 btn-transition interactive-element">Staff Portal</button>
+                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-3 rounded-full shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-0.5 btn-transition uppercase tracking-widest ml-2 interactive-element">Donate</button>
                 `;
             }
             lucide.createIcons();
@@ -317,8 +319,8 @@
                         </p>
                         
                         <div class="flex flex-wrap justify-center gap-6 z-10">
-                            <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-blue-600 shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer">Cebu Hotlines</button>
-                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border border-slate-300 text-slate-800 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 transition-all hover:-translate-y-1 backdrop-blur-md shadow-md relative z-50 pointer-events-auto cursor-pointer">View Urgent Needs</button>
+                            <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-blue-600 shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1 interactive-element">Cebu Hotlines</button>
+                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border border-slate-300 text-slate-800 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 transition-all hover:-translate-y-1 shadow-md interactive-element">View Urgent Needs</button>
                         </div>
                     </section>
 
@@ -349,7 +351,7 @@
                     </section>
 
                     <section id="urgent-needs" class="bg-section-white py-28 px-6 scroll-mt-10 relative border-b border-slate-200">
-                        <div class="light-grid absolute inset-0 z-0"></div>
+                        <div class="light-grid absolute inset-0 z-0 pointer-events-none"></div>
                         <div class="max-w-7xl mx-auto space-y-16 relative z-10">
                             <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-2 border-slate-100 pb-10 gap-8">
                                 <div class="text-center md:text-left space-y-4">
@@ -361,7 +363,7 @@
                                     </div>
                                     <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Live Public Telemetry Radar</p>
                                 </div>
-                                <button onclick="openModal('donate')" class="text-sm font-black text-white bg-slate-900 px-10 py-5 hover:bg-blue-600 btn-transition rounded-full shadow-xl shadow-slate-900/20 uppercase tracking-widest hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer">Submit Support</button>
+                                <button onclick="openModal('donate')" class="text-sm font-black text-white bg-slate-900 px-10 py-5 hover:bg-blue-600 btn-transition rounded-full shadow-xl shadow-slate-900/20 uppercase tracking-widest hover:-translate-y-1 interactive-element">Submit Support</button>
                             </div>
                             <div id="radar-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
                         </div>
@@ -450,21 +452,22 @@
             if (!sessionProfile) return showView('landing');
             const main = document.getElementById('main-content');
             
+            // Generate contextual buttons based on role
             let actionButtons = '';
             if (sessionProfile.role === ROLES.SUPER_ADMIN) {
-                actionButtons = `<button type="button" onclick="openModal('add_need')" class="w-full md:w-auto px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="radio" class="w-4 h-4"></i> Broadcast Need</button>`;
+                actionButtons = `<button type="button" onclick="openModal('add_need')" class="w-full md:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1 interactive-element"><i data-lucide="radio" class="w-4 h-4"></i> Broadcast Need</button>`;
             } else if (sessionProfile.role === ROLES.ADMIN) {
-                actionButtons = `<button type="button" onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="send" class="w-4 h-4"></i> Request PDRRMO Supply</button>`;
+                actionButtons = `<button type="button" onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1 interactive-element"><i data-lucide="send" class="w-4 h-4"></i> Request HQ Supplies</button>`;
             } else if (sessionProfile.role === ROLES.BARANGAY) {
                 actionButtons = `
-                    <button type="button" onclick="openModal('brgy_request')" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="hand-heart" class="w-4 h-4"></i> Request City Hub Supply</button>
-                    <button type="button" onclick="openModal('officer_distribute')" class="w-full md:w-auto px-6 py-3 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="users" class="w-4 h-4"></i> Log DAF Distribution</button>
+                    <button type="button" onclick="openModal('brgy_request')" class="w-full md:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1 interactive-element"><i data-lucide="hand-heart" class="w-4 h-4"></i> Request City Hub Supply</button>
+                    <button type="button" onclick="openModal('officer_distribute')" class="w-full md:w-auto px-6 py-3.5 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1 interactive-element"><i data-lucide="users" class="w-4 h-4"></i> Log DAF Distribution</button>
                 `;
             }
 
             main.innerHTML = `
                 <div class="max-w-7xl mx-auto px-6 space-y-8 py-12 animate-in fade-in">
-                    <header class="flex flex-col md:flex-row justify-between items-center bg-white p-8 card-shadow border border-slate-100 border-b-8 border-b-slate-900 rounded-[2rem] gap-6">
+                    <header class="flex flex-col md:flex-row justify-between items-center bg-white p-8 card-shadow border border-slate-100 border-b-8 border-b-slate-900 rounded-[2.5rem] gap-8">
                         <div class="flex items-center gap-6 w-full md:w-auto text-center md:text-left flex-col md:flex-row">
                             <div class="w-20 h-20 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-4xl font-black shadow-xl shadow-slate-900/20">${sessionProfile.municipality === 'all' ? 'HQ' : sessionProfile.municipality.charAt(0).toUpperCase()}</div>
                             <div>
@@ -473,7 +476,7 @@
                                 <p class="text-sm font-bold text-slate-500 mt-2 uppercase tracking-widest">${ROLE_DISPLAY_NAMES[sessionProfile.role] || sessionProfile.role}</p>
                             </div>
                         </div>
-                        <div class="flex flex-col sm:flex-row w-full md:w-auto mt-2 md:mt-0 gap-3">
+                        <div class="flex flex-col sm:flex-row w-full md:w-auto gap-3">
                             ${actionButtons}
                         </div>
                     </header>
@@ -546,7 +549,7 @@
                     
                     invHtml += `
                         <div class="p-5 bg-white/5 rounded-2xl border border-white/10 flex flex-col justify-center items-center text-center hover:bg-white/10 btn-transition">
-                            <p class="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1.5">${item.category}</p>
+                            <p class="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1.5 line-clamp-1">${item.category}</p>
                             <h4 class="font-black text-slate-100 uppercase text-sm mb-3 leading-tight tracking-tight">${item.item_name}</h4>
                             <span class="text-4xl font-black text-white tracking-tighter leading-none drop-shadow-md">${item.current}</span>
                         </div>
@@ -587,7 +590,7 @@
                                 <h4 class="font-black text-slate-900 text-base italic uppercase tracking-tight">${d.donor}</h4>
                                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">Item: <span class="text-rose-600 font-black">${d.item}</span></p>
                             </div>
-                            <button type="button" onclick="window.prepareProcessDonation('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-rose-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer">Process</button>
+                            <button type="button" onclick="window.prepareProcessDonation('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-rose-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5 interactive-element">Process</button>
                         </div>
                     `;
                 });
@@ -607,13 +610,10 @@
                     let actionHtml = '';
                     if (r.status === 'pending' || r.status === 'queued') {
                         actionHtml = `
-                            <button type="button" onclick="queueRequest('${id}')" class="text-[9px] font-black bg-orange-50 text-orange-600 px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-orange-100 border border-orange-200 btn-transition">Queue</button>
-                            <button type="button" onclick="window.prepareFulfillRequest('${id}')" class="text-[9px] font-black bg-slate-900 text-white px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition">Allocate</button>
+                            <button type="button" onclick="window.prepareFulfillRequest('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition interactive-element">Allocate & Dispatch Fleet</button>
                         `;
-                    } else if (r.status === 'ready_for_pickup') {
-                        actionHtml = `<button type="button" onclick="handoverRequest('${id}')" class="text-[9px] font-black bg-blue-50 text-blue-600 px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-100 border border-blue-200 btn-transition">Handover to Fleet</button>`;
-                    } else if (r.status === 'handed_over') {
-                        actionHtml = `<span class="text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">Awaiting Fleet Pick-up</span>`;
+                    } else {
+                        actionHtml = `<span class="text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">Fleet Dispatched</span>`;
                     }
                     
                     html += `
@@ -621,8 +621,9 @@
                             <div class="pr-4">
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${r.location.replace('_', ' ')} HUB</span>
                                 <h4 class="font-black text-slate-900 text-base uppercase mt-1 italic tracking-tight">${r.items}</h4>
+                                ${r.note ? `<p class="text-[10px] font-medium text-slate-500 mt-2 line-clamp-2 italic border-l-2 border-slate-300 pl-2">"${r.note}"</p>` : ''}
                             </div>
-                            <div class="flex items-center gap-2 relative z-50 pointer-events-auto">
+                            <div class="flex items-center gap-2">
                                 ${actionHtml}
                             </div>
                         </div>
@@ -631,16 +632,6 @@
                 container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">All Requests Handled</p>';
             });
         }
-
-        window.queueRequest = async (id) => {
-            await update(ref(db, `requests/${id}`), { status: 'queued' });
-            notify('Requisition placed in queue.', 'info');
-        };
-
-        window.handoverRequest = async (id) => {
-            await update(ref(db, `requests/${id}`), { status: 'handed_over' });
-            notify('Handed over to LGU Fleet!', 'success');
-        };
 
 
         // ==========================================
@@ -654,6 +645,7 @@
                         <div class="bg-slate-900 p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-blue-500 text-white shadow-2xl shadow-slate-900/20">
                             <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4 gap-4 flex-wrap">
                                 <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="warehouse" class="text-blue-400 w-6 h-6"></i> C/MDRRMO Inventory</h3>
+                                <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest border border-blue-400/30 bg-blue-400/10 px-3 py-1.5 rounded-lg">Avail for BDRRMC</span>
                             </div>
                             <div id="admin-hub-inventory" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                         </div>
@@ -702,7 +694,6 @@
                 Object.keys(data).forEach(id => {
                     const item = data[id];
                     
-                    // Build options for Brgy approval modal
                     if (item.current > 0) {
                         adminHubInvOptions += `<option value="${id}">${item.item_name} (Avail: ${item.current})</option>`;
                     }
@@ -731,14 +722,12 @@
                         let statusText = '';
                         let isMoving = false;
                         
-                        if (r.status === 'pending') statusText = 'Awaiting HQ Approval';
-                        else if (r.status === 'queued') statusText = 'Queued at HQ (Low Stock)';
-                        else if (r.status === 'ready_for_pickup') statusText = 'Ready at Capitol. Fleet Dispatched.';
-                        else if (r.status === 'handed_over') statusText = 'Fleet Loading at Capitol.';
+                        if (r.status === 'pending' || r.status === 'queued') statusText = 'Awaiting HQ Approval';
+                        else if (r.status === 'ready_for_pickup') statusText = 'HQ Allocated. Awaiting Fleet.';
                         else if (r.status === 'in_transit') { statusText = '<span class="w-1.5 h-1.5 bg-blue-500 rounded-full active-dot"></span> In Transit via LGU Fleet'; isMoving = true; }
                         
                         html += `
-                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
                                 <div>
                                     <span class="text-[9px] font-black ${isMoving ? 'text-blue-500 flex items-center gap-1.5' : 'text-orange-500'} uppercase tracking-widest mb-1.5 block">
                                         ${statusText}
@@ -766,11 +755,10 @@
                     let actionHtml = '';
                     if (r.status === 'pending' || r.status === 'queued') {
                         actionHtml = `
-                            <button type="button" onclick="queueBrgyRequest('${id}')" class="text-[9px] font-black bg-orange-50 text-orange-600 px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-orange-100 border border-orange-200 btn-transition">Queue</button>
-                            <button type="button" onclick="window.prepareApproveBrgy('${id}')" class="text-[9px] font-black bg-slate-900 text-white px-3 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition">Approve</button>
+                            <button type="button" onclick="window.prepareApproveBrgy('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition interactive-element">Approve &<br>Dispatch Fleet</button>
                         `;
                     } else {
-                        actionHtml = `<span class="text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">${r.status.replace(/_/g, ' ')}</span>`;
+                        actionHtml = `<span class="text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">Fleet Dispatched</span>`;
                     }
                     
                     html += `
@@ -779,7 +767,7 @@
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">From: ${r.officer_name}</span>
                                 <h4 class="font-black text-slate-900 text-base uppercase mt-1 italic tracking-tight">${r.qty}x ${r.item}</h4>
                             </div>
-                            <div class="flex items-center gap-2 relative z-50 pointer-events-auto">
+                            <div class="flex items-center gap-2">
                                 ${actionHtml}
                             </div>
                         </div>
@@ -800,9 +788,9 @@
                     if (user.municipality !== sessionProfile.municipality) return;
                     
                     const card = `
-                        <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 mb-3">
+                        <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 mb-3 hover:bg-white hover:shadow-sm btn-transition">
                             <div><h4 class="font-black text-slate-900 text-sm uppercase tracking-tight italic">${user.name || 'Unknown User'}</h4><p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">${ROLE_DISPLAY_NAMES[user.role] || user.role}</p></div>
-                            ${user.status === 'pending' ? `<button type="button" onclick="approveUser('${uid}')" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition relative z-50 pointer-events-auto cursor-pointer">Approve</button>` : `<span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-lg">Approved</span>`}
+                            ${user.status === 'pending' ? `<button type="button" onclick="approveUser('${uid}')" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition interactive-element">Approve</button>` : `<span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-lg">Approved</span>`}
                         </div>`;
                     if (user.status === 'pending') pendingHtml += card; else activeHtml += card;
                 });
@@ -815,11 +803,6 @@
             if(!db) return;
             try { await update(ref(db, `users/${uid}`), { status: 'approved' }); notify('Personnel Approved', 'success'); } 
             catch(e) { notify('Permission Denied', 'error'); }
-        };
-
-        window.queueBrgyRequest = async (id) => {
-            await update(ref(db, `brgy_requests/${id}`), { status: 'queued' });
-            notify('Barangay request placed in queue.', 'info');
         };
 
         window.prepareApproveBrgy = (id) => {
@@ -860,7 +843,7 @@
                 Object.keys(data).forEach(id => {
                     const r = data[id];
                     if (r.location !== sessionProfile.municipality) return;
-                    if (r.status === 'ready_for_pickup' || r.status === 'handed_over' || r.status === 'in_transit') {
+                    if (r.status === 'ready_for_pickup' || r.status === 'in_transit') {
                         
                         const itemDesc = r.dispatched_item || r.items;
                         const qtyDesc = r.dispatched_qty ? `${r.dispatched_qty}x ` : '';
@@ -869,14 +852,11 @@
                         let statusText = '';
 
                         if (r.status === 'ready_for_pickup') {
-                            statusText = 'Awaiting SA Handover at Capitol';
-                            actionHtml = `<button disabled class="w-full bg-slate-100 text-slate-400 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest mt-4">Waiting for PDRRMO Handover</button>`;
-                        } else if (r.status === 'handed_over') {
-                            statusText = 'Handed Over at Capitol';
-                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Begin Transit to City Hub</button>`;
+                            statusText = 'Ready at Capitol';
+                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg hover:-translate-y-1 interactive-element mt-4">Confirm Pick-up from HQ</button>`;
                         } else if (r.status === 'in_transit') {
                             statusText = '<span class="w-2.5 h-2.5 bg-blue-500 rounded-full active-dot shadow-[0_0_10px_rgba(59,130,246,0.8)]"></span> Driving to City Hub';
-                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-blue-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Mark Delivered to Hub</button>`;
+                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-blue-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg hover:-translate-y-1 interactive-element mt-4">Mark Delivered to Hub</button>`;
                         }
 
                         html += `
@@ -912,14 +892,14 @@
 
                         if (r.status === 'ready_for_pickup') {
                             statusText = 'Ready at City Hub';
-                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'in_transit')" class="w-full bg-white text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-100 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Begin Transit to Barangay</button>`;
+                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'in_transit')" class="w-full bg-white text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-100 btn-transition shadow-lg hover:-translate-y-1 interactive-element mt-4">Begin Transit to Barangay</button>`;
                         } else if (r.status === 'in_transit') {
                             statusText = '<span class="w-2.5 h-2.5 bg-fuchsia-400 rounded-full active-dot shadow-[0_0_10px_rgba(217,70,239,0.8)]"></span> Driving to Barangay';
-                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'arrived')" class="w-full bg-fuchsia-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-700 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Mark Delivered to Barangay</button>`;
+                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'arrived')" class="w-full bg-fuchsia-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-700 btn-transition shadow-lg hover:-translate-y-1 interactive-element mt-4">Mark Delivered to Barangay</button>`;
                         }
 
                         html += `
-                            <div class="p-6 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm relative z-20">
+                            <div class="p-6 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm relative z-20 hover:bg-white/20 btn-transition">
                                 <div class="flex justify-between items-start mb-4">
                                     <span class="text-[10px] font-black text-fuchsia-300 flex items-center gap-2 uppercase tracking-widest">${statusText}</span>
                                     <i data-lucide="map" class="text-white/40 w-5 h-5"></i>
@@ -1079,8 +1059,7 @@
                     
                     let statusText = '';
                     let statusColor = '';
-                    if (r.status === 'pending') { statusText = 'Awaiting City Hub'; statusColor = 'text-orange-500 bg-orange-50 border-orange-200'; }
-                    else if (r.status === 'queued') { statusText = 'Queued at City Hub'; statusColor = 'text-rose-500 bg-rose-50 border-rose-200'; }
+                    if (r.status === 'pending' || r.status === 'queued') { statusText = 'Awaiting City Hub'; statusColor = 'text-orange-500 bg-orange-50 border-orange-200'; }
                     else if (r.status === 'ready_for_pickup') { statusText = 'Allocated. Awaiting Fleet.'; statusColor = 'text-blue-500 bg-blue-50 border-blue-200'; }
                     else if (r.status === 'in_transit') { statusText = 'Fleet En Route'; statusColor = 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200'; }
                     else if (r.status === 'arrived') { statusText = 'Arrived'; statusColor = 'text-emerald-600 bg-emerald-50 border-emerald-200'; }
@@ -1151,8 +1130,8 @@
                 <form id="auth-form" class="space-y-6">
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-bold focus:border-blue-500 focus:bg-white transition-all shadow-sm" required></div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-bold focus:border-blue-500 focus:bg-white transition-all shadow-sm" required></div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 mt-2 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition relative z-50 pointer-events-auto cursor-pointer">Login</button>
-                    <p class="text-center text-xs font-bold text-slate-500 mt-6">New Personnel? <button type="button" onclick="openModal('signup')" class="text-blue-600 font-black hover:underline transition-colors relative z-50 pointer-events-auto cursor-pointer">Register Here</button></p>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 mt-2 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition interactive-element">Login</button>
+                    <p class="text-center text-xs font-bold text-slate-500 mt-6">New Personnel? <button type="button" onclick="openModal('signup')" class="text-blue-600 font-black hover:underline transition-colors interactive-element">Register Here</button></p>
                 </form>`;
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'login');
             
@@ -1167,7 +1146,7 @@
                     </div>
                     <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="reg-email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 focus:bg-white transition-all" required></div>
                     <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="reg-pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 focus:bg-white transition-all" required></div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 mt-4 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition relative z-50 pointer-events-auto cursor-pointer">Register Account</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 mt-4 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition interactive-element">Register Account</button>
                 </form>`;
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'signup');
             
@@ -1179,7 +1158,7 @@
                     <form id="donate-form" class="space-y-6">
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Donor Name</label><input type="text" id="don-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 focus:bg-white transition-all" required></div>
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Support Item(s)</label><input type="text" id="don-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 focus:bg-white transition-all" placeholder="e.g. 500 Sacks of Rice" required></div>
-                        <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:shadow-rose-600/50 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Submit Donation</button>
+                        <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:shadow-rose-600/50 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Submit Donation</button>
                     </form>
                 </div>`;
                 document.getElementById('donate-form').onsubmit = async (e) => {
@@ -1210,7 +1189,7 @@
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Target Total Needed</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" required></div>
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Stock</label><input type="number" id="need-current" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" value="0" required></div>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-rose-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Broadcast to Public</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-rose-600 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Broadcast to Public</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('need-cat', 'need-item'), 0);
@@ -1252,7 +1231,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Added</label>
                         <input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Add to Central Inventory</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Add to Central Inventory</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('proc-cat', 'proc-item'), 0);
@@ -1299,7 +1278,7 @@
                 <form id="req-form" class="space-y-6">
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">General Need Description</label><input type="text" id="req-desc" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="e.g. Relief goods for 500 evacuated families" required></div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Additional Notes</label><textarea id="req-note" rows="3" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all custom-scrollbar"></textarea></div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Transmit Request</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Transmit Request</button>
                 </form>`;
                 
                 document.getElementById('req-form').onsubmit = async (e) => {
@@ -1336,7 +1315,7 @@
                         <select id="breq-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all"></select>
                     </div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Needed</label><input type="number" id="breq-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required></div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Transmit Request</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Transmit Request</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('breq-cat', 'breq-item'), 0);
@@ -1364,13 +1343,13 @@
                 };
 
             } else if (type === 'admin_approve_brgy') {
-                title.innerText = 'Approve & Allocate to Barangay';
+                title.innerText = 'Approve & Dispatch Fleet';
                 
                 if(!adminHubInvOptions) adminHubInvOptions = `<option disabled>No items available in local hub.</option>`;
 
                 body.innerHTML = `
                 <div class="bg-blue-50 p-5 rounded-2xl mb-6 border border-blue-100 shadow-inner">
-                    <p class="text-xs font-bold text-blue-800 leading-relaxed">Allocate items from your City Hub Inventory to the Barangay Fleet.</p>
+                    <p class="text-xs font-bold text-blue-800 leading-relaxed">Allocate items from your City Hub Inventory to be delivered by the LGU Fleet to the Barangay.</p>
                 </div>
                 <form id="approve-brgy-form" class="space-y-6">
                     <div class="space-y-2">
@@ -1381,7 +1360,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity to Dispatch</label>
                         <input type="number" id="abrgy-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Deduct & Approve</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Approve & Dispatch Fleet</button>
                 </form>`;
 
                 document.getElementById('approve-brgy-form').onsubmit = async (e) => {
@@ -1414,9 +1393,9 @@
                         });
                         
                         closeModal();
-                        notify('Request Approved & Allocated!', 'success');
+                        notify('Approved! Fleet Dispatched.', 'success');
                     } catch (error) {
-                        notify('Database Error: Firebase Rules blocked access.', 'error');
+                        notify('Database Error: Check Firebase Rules.', 'error');
                     }
                 };
 
@@ -1436,7 +1415,7 @@
                         <select id="dist-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all">${officerBrgyInvOptions}</select>
                     </div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Given</label><input type="number" id="dist-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" required></div>
-                    <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Confirm Distribution</button>
+                    <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Confirm Distribution</button>
                 </form>`;
                 
                 document.getElementById('dist-form').onsubmit = async (e) => {
@@ -1481,10 +1460,10 @@
                 };
 
             } else if (type === 'fulfill_request') {
-                title.innerText = 'Allocate for LGU Fleet Pick-Up';
+                title.innerText = 'Allocate & Dispatch Fleet';
                 body.innerHTML = `
                 <div class="bg-blue-50 p-5 rounded-2xl mb-6 border border-blue-100 shadow-inner">
-                    <p class="text-xs font-bold text-blue-800 leading-relaxed">Select the items from Central Inventory to allocate for this city's Logistics Officer to pick up.</p>
+                    <p class="text-xs font-bold text-blue-800 leading-relaxed">Select items from Central Inventory to allocate. The LGU Fleet will automatically be notified to pick this up.</p>
                 </div>
                 <form id="fulfill-form" class="space-y-6">
                     <div class="space-y-2">
@@ -1499,7 +1478,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity to Dispatch</label>
                         <input type="number" id="ful-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto cursor-pointer">Deduct & Allocate</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 interactive-element">Deduct & Dispatch Fleet</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('ful-cat', 'ful-item'), 0);
@@ -1535,7 +1514,7 @@
                         });
                         
                         closeModal();
-                        notify('Allocated! Awaiting LGU Pick-up.', 'success');
+                        notify('Allocated! Fleet Notified.', 'success');
                     } catch (error) {
                         notify('Database Error: Firebase Rules blocked access.', 'error');
                     }
