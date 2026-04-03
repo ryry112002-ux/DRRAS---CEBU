@@ -16,36 +16,43 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
-        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
+        .glass-nav { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226, 232, 240, 0.6); }
         .card-shadow { box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05); }
-        .btn-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-transition { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         
         .active-dot { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
         
         .hide { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
 
+        /* Premium Dark Aurora Hero */
         .hero-section {
-            background: linear-gradient(135deg, #e11d48 0%, #1d4ed8 100%);
-            min-height: 75vh;
+            background-color: #020617; /* Very deep slate */
+            min-height: 85vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: white;
             position: relative;
-            padding: 6rem 0 10rem 0; /* Extra bottom padding for overlapping cards */
+            padding: 6rem 0 12rem 0;
+            overflow: hidden;
         }
         
-        /* Subtle dot pattern overlay for the hero */
-        .hero-pattern {
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+        /* Floating Glowing Orbs */
+        .hero-glow-1 { position: absolute; top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 60%); filter: blur(80px); pointer-events: none; }
+        .hero-glow-2 { position: absolute; bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(244,63,94,0.15) 0%, transparent 60%); filter: blur(80px); pointer-events: none; }
+        
+        /* Dotted Grid Pattern */
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(15, 23, 42, 0.05) 1.5px, transparent 1.5px);
             background-size: 24px 24px;
-            pointer-events: none;
+        }
+        .bg-grid-pattern-dark {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
         }
 
         .hero-title {
@@ -53,15 +60,8 @@
             letter-spacing: -0.04em;
             text-transform: uppercase;
             font-weight: 900;
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-        }
-        
-        /* Beautiful animated gradient for text */
-        .text-gradient {
-            background: linear-gradient(to right, #ffffff, #e2e8f0, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -101,7 +101,7 @@
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16 text-center md:text-left">
             <div class="col-span-1 md:col-span-2 space-y-6">
                 <div class="flex items-center justify-center md:justify-start gap-3">
-                    <div class="p-2 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg">
+                    <div class="p-2 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg shadow-blue-500/20">
                         <i data-lucide="shield-plus" class="text-white w-5 h-5"></i>
                     </div>
                     <span class="font-black tracking-tighter text-2xl uppercase italic">DRERAS CEBU</span>
@@ -132,8 +132,8 @@
     </footer>
 
     <!-- MODAL -->
-    <div id="modal-container" class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 hide transition-opacity">
-        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden border border-white animate-in fade-in zoom-in duration-300">
+    <div id="modal-container" class="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hide transition-opacity">
+        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden border border-white/20 animate-in fade-in zoom-in duration-300">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-sm">
                 <h3 id="modal-title" class="text-sm font-black text-slate-800 uppercase tracking-widest">System Access</h3>
                 <button onclick="closeModal()" class="p-2.5 bg-white shadow-sm hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full btn-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -261,65 +261,76 @@
             const main = document.getElementById('main-content');
             main.innerHTML = `
                 <div class="animate-in fade-in duration-700">
+                    <!-- HERO SECTION -->
                     <section class="hero-section">
-                        <div class="hero-pattern"></div>
+                        <div class="bg-grid-pattern-dark absolute inset-0 opacity-50 z-0"></div>
+                        <div class="hero-glow-1 z-0"></div>
+                        <div class="hero-glow-2 z-0"></div>
                         
-                        <!-- Premium Glassmorphism Horizontal Stretch Box -->
-                        <div class="w-full flex justify-center items-center py-16 md:py-20 mb-12 bg-white/10 backdrop-blur-md border-y border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.15)] relative z-10">
+                        <div class="z-10 flex flex-col items-center">
+                            <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] mb-8 backdrop-blur-md shadow-lg">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 active-dot shadow-[0_0_10px_rgba(52,211,153,0.8)]"></span> 
+                                System Online & Synchronized
+                            </div>
+                        </div>
+                        
+                        <!-- Premium Glassmorphism Stretch Box -->
+                        <div class="w-full flex justify-center items-center py-16 md:py-20 mb-12 bg-white/5 backdrop-blur-xl border-y border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.3)] relative z-10">
                             <div class="w-full max-w-5xl px-6 text-center">
-                                <h2 class="hero-title m-0 text-gradient drop-shadow-md">
-                                    DISASTER RELIEF <br> & EMERGENCY <br> <span class="text-white/60">RESOURCE</span> <br> ALLOCATION
+                                <h2 class="hero-title m-0 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                                    DISASTER RELIEF <br> & EMERGENCY <br> <span class="text-white/40">RESOURCE</span> <br> ALLOCATION
                                 </h2>
                             </div>
                         </div>
                         
-                        <p class="text-slate-50/90 text-base md:text-xl font-medium max-w-3xl mb-12 leading-relaxed text-center italic drop-shadow-sm px-6 relative z-10">
+                        <p class="text-slate-300 text-base md:text-xl font-medium max-w-3xl mb-12 leading-relaxed text-center italic drop-shadow-md px-6 relative z-10">
                             Centralized telemetry establishing secure resource links across all Cebu hubs. Synchronizing relief assets in real-time to ensure no district is left behind.
                         </p>
                         
                         <div class="flex flex-wrap justify-center gap-6 z-10 relative px-6">
-                            <button onclick="showView('hotlines')" class="bg-white text-blue-700 px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 shadow-xl shadow-blue-900/20 transition-all hover:-translate-y-1">Cebu Hotlines</button>
-                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-transparent border-2 border-white/60 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white transition-all hover:-translate-y-1 backdrop-blur-sm">View Urgent Needs</button>
+                            <button onclick="showView('hotlines')" class="bg-white text-slate-900 px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-100 shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all hover:-translate-y-1">Cebu Hotlines</button>
+                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white/20 hover:border-white/40 transition-all hover:-translate-y-1 backdrop-blur-md shadow-lg">View Urgent Needs</button>
                         </div>
                     </section>
 
-                    <!-- Feature Cards (Pulled up to overlap hero) -->
-                    <section class="max-w-7xl mx-auto px-6 -mt-20 relative z-20 grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-                        <div class="bg-white/90 backdrop-blur-xl p-8 card-shadow rounded-[2rem] border border-white group hover:-translate-y-2 transition-all duration-300">
-                            <div class="flex items-center gap-5 mb-6">
-                                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 btn-transition"><i data-lucide="activity" class="w-7 h-7"></i></div>
-                                <h3 class="text-xl font-black uppercase tracking-tight italic text-slate-800 leading-tight">Provincial<br>Command</h3>
+                    <!-- FEATURE CARDS -->
+                    <section class="max-w-7xl mx-auto px-6 -mt-16 relative z-20 grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+                        <div class="bg-white p-8 md:p-10 card-shadow rounded-[2rem] border border-slate-100 group hover:-translate-y-3 hover:shadow-2xl btn-transition">
+                            <div class="flex items-center gap-5 mb-8">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 btn-transition"><i data-lucide="activity" class="w-8 h-8"></i></div>
+                                <h3 class="text-2xl font-black uppercase tracking-tighter italic text-slate-800 leading-none">Provincial<br>Command</h3>
                             </div>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Providing LGUs with a Bird's Eye View of regional deficits for immediate data-driven deployment decisions.</p>
                         </div>
-                        <div class="bg-white/90 backdrop-blur-xl p-8 card-shadow rounded-[2rem] border border-white group hover:-translate-y-2 transition-all duration-300">
-                            <div class="flex items-center gap-5 mb-6">
-                                <div class="w-14 h-14 bg-gradient-to-br from-slate-700 to-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/30 group-hover:scale-110 btn-transition"><i data-lucide="map-pin" class="w-7 h-7"></i></div>
-                                <h3 class="text-xl font-black uppercase tracking-tight italic text-slate-800 leading-tight">Barangay<br>Response</h3>
+                        <div class="bg-white p-8 md:p-10 card-shadow rounded-[2rem] border border-slate-100 group hover:-translate-y-3 hover:shadow-2xl btn-transition">
+                            <div class="flex items-center gap-5 mb-8">
+                                <div class="w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/30 group-hover:scale-110 btn-transition"><i data-lucide="map-pin" class="w-8 h-8"></i></div>
+                                <h3 class="text-2xl font-black uppercase tracking-tighter italic text-slate-800 leading-none">Barangay<br>Response</h3>
                             </div>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Empowering local officers with digital ledgers to strictly track household relief loads and verify handovers.</p>
                         </div>
-                        <div class="bg-white/90 backdrop-blur-xl p-8 card-shadow rounded-[2rem] border border-white group hover:-translate-y-2 transition-all duration-300">
-                            <div class="flex items-center gap-5 mb-6">
-                                <div class="w-14 h-14 bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 group-hover:scale-110 btn-transition"><i data-lucide="shield" class="w-7 h-7"></i></div>
-                                <h3 class="text-xl font-black uppercase tracking-tight italic text-slate-800 leading-tight">Data<br>Isolation</h3>
+                        <div class="bg-white p-8 md:p-10 card-shadow rounded-[2rem] border border-slate-100 group hover:-translate-y-3 hover:shadow-2xl btn-transition">
+                            <div class="flex items-center gap-5 mb-8">
+                                <div class="w-16 h-16 bg-gradient-to-br from-rose-500 to-rose-700 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 group-hover:scale-110 btn-transition"><i data-lucide="shield" class="w-8 h-8"></i></div>
+                                <h3 class="text-2xl font-black uppercase tracking-tighter italic text-slate-800 leading-none">Data<br>Isolation</h3>
                             </div>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Strict multi-tenant architecture ensures that individual municipal intelligence remains protected and completely isolated.</p>
                         </div>
                     </section>
 
-                    <!-- Urgent Needs Radar -->
-                    <section id="urgent-needs" class="bg-gradient-to-b from-slate-50 to-white py-24 px-6 scroll-mt-10 relative">
+                    <!-- URGENT NEEDS RADAR -->
+                    <section id="urgent-needs" class="bg-slate-50 py-24 px-6 scroll-mt-10 relative border-t border-slate-200/50">
+                        <div class="bg-grid-pattern absolute inset-0 opacity-40 z-0 pointer-events-none"></div>
                         <div class="max-w-7xl mx-auto space-y-16 relative z-10">
-                            <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-2 border-slate-200 pb-10 gap-8">
+                            <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-2 border-slate-200/80 pb-10 gap-8">
                                 <div class="text-center md:text-left space-y-3">
                                     <div class="flex items-center justify-center md:justify-start gap-4">
-                                        <div class="p-3 bg-rose-100 rounded-2xl text-rose-600 active-dot">
-                                            <i data-lucide="radar" class="w-8 h-8"></i>
+                                        <div class="p-3 bg-rose-100 rounded-2xl text-rose-600 shadow-inner">
+                                            <i data-lucide="radar" class="w-8 h-8 active-dot"></i>
                                         </div>
                                         <h3 class="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Urgent Needs</h3>
                                     </div>
-                                    <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Live Public Telemetry Radar</p>
+                                    <p class="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">Live Public Telemetry Radar</p>
                                 </div>
                                 <button onclick="openModal('donate')" class="text-sm font-black text-white bg-slate-900 px-8 py-4 hover:bg-blue-600 btn-transition rounded-full shadow-xl shadow-slate-900/20 uppercase tracking-widest hover:-translate-y-1">Submit Support</button>
                             </div>
@@ -338,7 +349,7 @@
                 if (!container) return;
                 
                 if (!data) {
-                    container.innerHTML = `<div class="col-span-full py-20 bg-white/50 backdrop-blur-md border-2 border-dashed border-slate-200 rounded-[2rem] text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-5 shadow-sm"><i data-lucide="check-circle-2" class="w-12 h-12"></i> Radar Optimal: No immediate deficits reported across the province.</div>`;
+                    container.innerHTML = `<div class="col-span-full py-20 bg-white/80 backdrop-blur-md border-2 border-dashed border-slate-200 rounded-[2rem] text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-5 shadow-sm"><i data-lucide="check-circle-2" class="w-12 h-12"></i> Radar Optimal: No immediate deficits reported across the province.</div>`;
                     lucide.createIcons();
                     return;
                 }
@@ -371,7 +382,7 @@
                     }
                 });
 
-                container.innerHTML = html || `<div class="col-span-full py-20 bg-white/50 backdrop-blur-md border-2 border-dashed border-slate-200 rounded-[2rem] text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-5 shadow-sm"><i data-lucide="check-circle-2" class="w-12 h-12"></i> Radar Optimal: All broadcasted needs are currently fulfilled.</div>`;
+                container.innerHTML = html || `<div class="col-span-full py-20 bg-white/80 backdrop-blur-md border-2 border-dashed border-slate-200 rounded-[2rem] text-center text-emerald-500 font-bold uppercase tracking-widest text-sm flex flex-col items-center gap-5 shadow-sm"><i data-lucide="check-circle-2" class="w-12 h-12"></i> Radar Optimal: All broadcasted needs are currently fulfilled.</div>`;
                 lucide.createIcons();
             });
         }
@@ -426,7 +437,7 @@
             if (sessionProfile.role === ROLES.SUPER_ADMIN) renderSuperAdminDash();
             else if (sessionProfile.role === ROLES.ADMIN) renderAdminDash();
             else if (sessionProfile.role === ROLES.LOGISTICS) renderLogisticsDash();
-            else renderOperationsDash(); // Default Barangay fallback for now
+            else renderOperationsDash();
             
             lucide.createIcons();
         }
@@ -859,7 +870,7 @@
             } else if (type === 'fulfill_request') {
                 title.innerText = 'Allocate for LGU Pick-Up';
                 body.innerHTML = `
-                <div class="bg-blue-50 p-5 rounded-2xl mb-6 border border-blue-100">
+                <div class="bg-blue-50 p-5 rounded-2xl mb-6 border border-blue-100 shadow-inner">
                     <p class="text-xs font-bold text-blue-800 leading-relaxed">Select the items from Central Inventory to allocate for this city's Logistics Officer to pick up.</p>
                 </div>
                 <form id="fulfill-form" class="space-y-6">
