@@ -166,7 +166,7 @@
         const auth = getAuth(app);
 
         let sessionProfile = null;
-        let globalUrgentNeeds = {}; 
+        let globalInventory = {}; 
         let processingDonationId = null; 
         
         const HUBS = [
@@ -184,7 +184,6 @@
 
         const ROLES = { SUPER_ADMIN: 'super_admin', ADMIN: 'admin', BARANGAY: 'officer', LOGISTICS: 'logistic' };
 
-        // Hierarchical Inventory Structure based on Emergency Kits
         const INVENTORY_STRUCTURE = {
             "Family Food Packs": ["Rice (Kilos/Sacks)", "Canned Goods", "Instant Food Items (Noodles/Coffee/Milo)", "Biscuits/Crackers"],
             "Water": ["Bottled Water", "Gallon Water"],
@@ -313,7 +312,7 @@
         }
 
         function initRadar() {
-            onValue(ref(db, 'urgent_needs'), (snapshot) => {
+            onValue(ref(db, 'inventory'), (snapshot) => {
                 const data = snapshot.val();
                 const container = document.getElementById('radar-grid');
                 if (!container) return;
@@ -327,24 +326,27 @@
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const item = data[id];
-                    const deficit = item.target - item.current;
-                    if (deficit > 0) {
-                        html += `
-                        <div class="bg-white p-8 card-shadow border-t-8 border-rose-500 rounded-2xl relative overflow-hidden group hover:-translate-y-1 btn-transition">
-                            <div class="flex justify-between items-start mb-6">
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${item.category}</span>
-                                <div class="w-10 h-10 bg-rose-50 flex items-center justify-center text-rose-500 rounded-lg group-hover:scale-110 btn-transition"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
-                            </div>
-                            <h4 class="text-2xl font-black text-slate-900 leading-none uppercase mb-2 tracking-tight italic">${item.item_name}</h4>
-                            <p class="text-sm font-bold text-slate-500 mb-8">Urgent Deficit: <span class="text-rose-600 font-black text-xl">${deficit}</span></p>
-                            <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
-                                <div class="bg-blue-600 h-3 rounded-full" style="width: ${(item.current / item.target) * 100}%"></div>
-                            </div>
-                            <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <span>Secured: ${item.current}</span>
-                                <span>Target: ${item.target}</span>
-                            </div>
-                        </div>`;
+                    // Only show items that have been explicitly assigned a target > 0
+                    if (item.target && item.target > 0) {
+                        const deficit = item.target - item.current;
+                        if (deficit > 0) {
+                            html += `
+                            <div class="bg-white p-8 card-shadow border-t-8 border-rose-500 rounded-2xl relative overflow-hidden group hover:-translate-y-1 btn-transition">
+                                <div class="flex justify-between items-start mb-6">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${item.category}</span>
+                                    <div class="w-10 h-10 bg-rose-50 flex items-center justify-center text-rose-500 rounded-lg group-hover:scale-110 btn-transition"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+                                </div>
+                                <h4 class="text-2xl font-black text-slate-900 leading-none uppercase mb-2 tracking-tight italic">${item.item_name}</h4>
+                                <p class="text-sm font-bold text-slate-500 mb-8">Urgent Deficit: <span class="text-rose-600 font-black text-xl">${deficit}</span></p>
+                                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
+                                    <div class="bg-blue-600 h-3 rounded-full" style="width: ${(item.current / item.target) * 100}%"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <span>Secured: ${item.current}</span>
+                                    <span>Target: ${item.target}</span>
+                                </div>
+                            </div>`;
+                        }
                     }
                 });
 
@@ -440,9 +442,9 @@
         }
 
         function initSuperAdminListeners() {
-            onValue(ref(db, 'urgent_needs'), (snapshot) => {
+            onValue(ref(db, 'inventory'), (snapshot) => {
                 const data = snapshot.val();
-                globalUrgentNeeds = data || {};
+                globalInventory = data || {};
                 
                 const needsContainer = document.getElementById('sa-urgent-needs');
                 const invContainer = document.getElementById('sa-inventory');
@@ -458,18 +460,8 @@
 
                 Object.keys(data).forEach(id => {
                     const item = data[id];
-                    needsHtml += `
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
-                            <div>
-                                <p class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${item.category}</p>
-                                <h4 class="font-black text-slate-800 uppercase text-sm">${item.item_name}</h4>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Target: ${item.target}</p>
-                            </div>
-                            <span class="text-[10px] font-black uppercase ${item.target - item.current > 0 ? 'text-rose-500' : 'text-emerald-500'}">
-                                Deficit: ${item.target - item.current > 0 ? item.target - item.current : 0}
-                            </span>
-                        </div>
-                    `;
+                    
+                    // Central Inventory Layer: Show everything
                     invHtml += `
                         <div class="p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col justify-center items-center text-center">
                             <p class="text-[8px] font-black text-blue-400/80 uppercase tracking-widest mb-1">${item.category}</p>
@@ -477,9 +469,26 @@
                             <span class="text-3xl font-black text-blue-400 tracking-tight leading-none">${item.current}</span>
                         </div>
                     `;
+
+                    // Needs Controller Layer: ONLY show if Super Admin explicitly set a target > 0
+                    if (item.target && item.target > 0) {
+                        needsHtml += `
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                                <div>
+                                    <p class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${item.category}</p>
+                                    <h4 class="font-black text-slate-800 uppercase text-sm">${item.item_name}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Target: ${item.target}</p>
+                                </div>
+                                <span class="text-[10px] font-black uppercase ${item.target - item.current > 0 ? 'text-rose-500' : 'text-emerald-500'}">
+                                    Deficit: ${item.target - item.current > 0 ? item.target - item.current : 0}
+                                </span>
+                            </div>
+                        `;
+                    }
                 });
-                needsContainer.innerHTML = needsHtml;
-                invContainer.innerHTML = invHtml;
+                
+                needsContainer.innerHTML = needsHtml || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Active Needs</p>';
+                invContainer.innerHTML = invHtml || '<p class="text-xs text-slate-500 font-bold uppercase tracking-widest text-center py-10 col-span-2">Inventory Empty</p>';
             });
 
             onValue(ref(db, 'donations'), (snapshot) => {
@@ -596,7 +605,6 @@
             `;
         }
 
-        // Dependent Dropdown Helper
         window.updateItemDropdown = (catSelectId, itemSelectId) => {
             const category = document.getElementById(catSelectId).value;
             const itemSelect = document.getElementById(itemSelectId);
@@ -610,7 +618,6 @@
             const body = document.getElementById('modal-body');
             container.classList.remove('hide');
             
-            // Generate primary category options
             const catOptions = Object.keys(INVENTORY_STRUCTURE).map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
             if (type === 'login') {
@@ -677,7 +684,6 @@
                     <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-rose-700 btn-transition mt-2">Broadcast to Public</button>
                 </form>`;
                 
-                // Initialize dependent dropdown
                 setTimeout(() => window.updateItemDropdown('need-cat', 'need-item'), 0);
 
                 document.getElementById('need-form').onsubmit = async (e) => {
@@ -687,7 +693,7 @@
                     const itemName = document.getElementById('need-item').value;
                     const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
                     
-                    await update(ref(db, `urgent_needs/${dbId}`), { 
+                    await update(ref(db, `inventory/${dbId}`), { 
                         category: catName,
                         item_name: itemName, 
                         target: parseInt(document.getElementById('need-target').value), 
@@ -716,7 +722,6 @@
                     <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-blue-700 btn-transition mt-2">Add to Central Inventory</button>
                 </form>`;
                 
-                // Initialize dependent dropdown
                 setTimeout(() => window.updateItemDropdown('proc-cat', 'proc-item'), 0);
 
                 document.getElementById('process-form').onsubmit = async (e) => {
@@ -729,21 +734,19 @@
                     const addedQty = parseInt(document.getElementById('proc-qty').value);
                     
                     let currentQty = 0;
-                    let targetQty = 0; // If they haven't broadcasted a need yet, target stays 0
-                    if (globalUrgentNeeds[dbId]) {
-                        currentQty = globalUrgentNeeds[dbId].current || 0;
-                        targetQty = globalUrgentNeeds[dbId].target || 0;
+                    let targetQty = 0; 
+                    if (globalInventory[dbId]) {
+                        currentQty = globalInventory[dbId].current || 0;
+                        targetQty = globalInventory[dbId].target || 0;
                     }
                     
-                    // Update Central Inventory
-                    await update(ref(db, `urgent_needs/${dbId}`), { 
+                    await update(ref(db, `inventory/${dbId}`), { 
                         category: catName,
                         item_name: itemName,
                         current: currentQty + addedQty,
                         target: targetQty
                     });
                     
-                    // Mark Donation as processed
                     await update(ref(db, `donations/${processingDonationId}`), { status: 'processed' });
                     
                     closeModal();
