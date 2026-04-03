@@ -166,8 +166,8 @@
         const auth = getAuth(app);
 
         let sessionProfile = null;
-        let globalUrgentNeeds = {}; // For Super Admin processing
-        let processingDonationId = null; // Temp holder
+        let globalUrgentNeeds = {}; 
+        let processingDonationId = null; 
         
         const HUBS = [
             { id: 'cebu_city', name: 'Cebu City' },
@@ -183,6 +183,15 @@
         ];
 
         const ROLES = { SUPER_ADMIN: 'super_admin', ADMIN: 'admin', BARANGAY: 'officer', LOGISTICS: 'logistic' };
+
+        // Standard Categories for Inventory Mapping
+        const INVENTORY_CATEGORIES = [
+            "Family Food Packs",
+            "Hygiene Kit",
+            "Water",
+            "Family Clothing/Shelter Kit",
+            "Kitchen Kit"
+        ];
 
         async function init() {
             lucide.createIcons();
@@ -396,9 +405,6 @@
             lucide.createIcons();
         }
 
-        // ==========================================
-        // NEW SUPER ADMIN DASHBOARD LOGIC
-        // ==========================================
         function renderSuperAdminDash() {
             const container = document.getElementById('dash-content');
             container.innerHTML = `
@@ -435,7 +441,6 @@
         }
 
         function initSuperAdminListeners() {
-            // Listen to Urgent Needs (This acts as the Inventory ledger too)
             onValue(ref(db, 'urgent_needs'), (snapshot) => {
                 const data = snapshot.val();
                 globalUrgentNeeds = data || {};
@@ -476,7 +481,6 @@
                 invContainer.innerHTML = invHtml;
             });
 
-            // Listen to Donations Queue
             onValue(ref(db, 'donations'), (snapshot) => {
                 const data = snapshot.val();
                 const container = document.getElementById('sa-donations');
@@ -485,7 +489,7 @@
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const d = data[id];
-                    if(d.status === 'processed') return; // Skip processed
+                    if(d.status === 'processed') return; 
                     html += `
                         <div class="p-4 bg-rose-50/50 rounded-xl border border-rose-100 flex justify-between items-center group">
                             <div>
@@ -499,7 +503,6 @@
                 container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">All Donations Processed</p>';
             });
 
-            // Listen to City Requests
             onValue(ref(db, 'requests'), (snapshot) => {
                 const data = snapshot.val();
                 const container = document.getElementById('sa-requests');
@@ -530,15 +533,10 @@
 
         window.fulfillRequest = async (id) => {
             if(!db) return;
-            // In a full system, this would open a modal to deduct from inventory. 
-            // For now, we update status to show the super admin workflow.
             await update(ref(db, `requests/${id}`), { status: 'dispatched' });
             notify('Request Marked as Dispatched', 'success');
         };
 
-        // ==========================================
-        // ADMIN DASHBOARD (City Level)
-        // ==========================================
         function renderAdminDash() {
             const container = document.getElementById('dash-content');
             container.innerHTML = `
@@ -597,15 +595,15 @@
             `;
         }
 
-        // ==========================================
-        // MODALS & FORMS
-        // ==========================================
         window.openModal = (type) => {
             const container = document.getElementById('modal-container');
             const title = document.getElementById('modal-title');
             const body = document.getElementById('modal-body');
             container.classList.remove('hide');
             
+            // Standardizing the category options string for consistency
+            const catOptions = INVENTORY_CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
             if (type === 'login') {
                 title.innerText = 'Staff Portal Access';
                 body.innerHTML = `
@@ -650,11 +648,15 @@
                     closeModal();
                     notify('Support Transmitted to HQ!', 'success');
                 };
+
             } else if (type === 'add_need') {
                 title.innerText = 'Broadcast Urgent Need';
                 body.innerHTML = `
                 <form id="need-form" class="space-y-5">
-                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Inventory Category Name</label><input type="text" id="need-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" placeholder="e.g. Rice (Sacks)" required></div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select id="need-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">${catOptions}</select>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Total Needed</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required></div>
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Stock</label><input type="number" id="need-current" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" value="0" required></div>
@@ -664,32 +666,54 @@
                 document.getElementById('need-form').onsubmit = async (e) => {
                     e.preventDefault();
                     if(!db) return;
-                    await push(ref(db, 'urgent_needs'), { name: document.getElementById('need-name').value, target: parseInt(document.getElementById('need-target').value), current: parseInt(document.getElementById('need-current').value) });
+                    const catName = document.getElementById('need-name').value;
+                    const catId = catName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    
+                    await update(ref(db, `urgent_needs/${catId}`), { 
+                        name: catName, 
+                        target: parseInt(document.getElementById('need-target').value), 
+                        current: parseInt(document.getElementById('need-current').value) 
+                    });
                     closeModal();
                     notify('Need Broadcasted', 'success');
                 };
+
             } else if (type === 'process_donation') {
                 title.innerText = 'Process Public Donation';
-                let options = Object.keys(globalUrgentNeeds).map(id => `<option value="${id}">${globalUrgentNeeds[id].name}</option>`).join('');
-                if(!options) options = `<option disabled>No Categories Available. Broadcast a Need first.</option>`;
-                
                 body.innerHTML = `
-                <div class="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100"><p class="text-xs font-bold text-blue-800">Convert the public text string into numeric central inventory.</p></div>
-                <form id="process-form" class="space-y-5">
-                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Match to Inventory Category</label><select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">${options}</select></div>
-                    <div class="space-y-2"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numeric Quantity Added</label><input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required></div>
+                <form id="process-form" class="space-y-5 mt-2">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">${catOptions}</select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Quantity Added</label>
+                        <input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required>
+                    </div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-blue-700 btn-transition mt-2">Add to Central Inventory</button>
                 </form>`;
+                
                 document.getElementById('process-form').onsubmit = async (e) => {
                     e.preventDefault();
                     if(!db || !processingDonationId) return;
-                    const catId = document.getElementById('proc-cat').value;
-                    const addedQty = parseInt(document.getElementById('proc-qty').value);
-                    if(!catId) { notify('Select a valid category', 'error'); return; }
                     
-                    // Update Inventory
-                    const currentQty = globalUrgentNeeds[catId].current || 0;
-                    await update(ref(db, `urgent_needs/${catId}`), { current: currentQty + addedQty });
+                    const catName = document.getElementById('proc-cat').value;
+                    const catId = catName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    const addedQty = parseInt(document.getElementById('proc-qty').value);
+                    
+                    let currentQty = 0;
+                    let targetQty = 0;
+                    if (globalUrgentNeeds[catId]) {
+                        currentQty = globalUrgentNeeds[catId].current || 0;
+                        targetQty = globalUrgentNeeds[catId].target || 0;
+                    }
+                    
+                    // Update Central Inventory
+                    await update(ref(db, `urgent_needs/${catId}`), { 
+                        name: catName,
+                        current: currentQty + addedQty,
+                        target: targetQty
+                    });
                     
                     // Mark Donation as processed
                     await update(ref(db, `donations/${processingDonationId}`), { status: 'processed' });
