@@ -87,7 +87,7 @@
 </head>
 <body class="min-h-screen flex flex-col relative text-base">
 
-    <!-- NAVIGATION HUB -->
+    <!-- NAVIGATION HUB (z-50 protects it from scrolling elements) -->
     <nav class="glass-nav sticky top-0 z-50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3 cursor-pointer group" onclick="sessionProfile ? showView('dashboard') : showView('landing')">
@@ -156,9 +156,9 @@
         <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-300">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-sm">
                 <h3 id="modal-title" class="text-sm font-black text-slate-900 uppercase tracking-widest">System Access</h3>
-                <button onclick="closeModal()" type="button" class="p-2.5 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full btn-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <button onclick="closeModal()" type="button" class="p-2.5 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full btn-transition relative z-50 cursor-pointer pointer-events-auto"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <div id="modal-body" class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar"></div>
+            <div id="modal-body" class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar relative z-10"></div>
         </div>
     </div>
 
@@ -271,15 +271,15 @@
                             <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${ROLE_DISPLAY_NAMES[sessionProfile.role] || sessionProfile.role}</p>
                             <p class="text-sm font-black text-slate-900 uppercase tracking-tight">${sessionProfile.municipality === 'all' ? 'Provincial HQ' : sessionProfile.municipality.replace('_', ' ')}</p>
                         </div>
-                        <button onclick="handleLogout()" class="px-6 py-2.5 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-full text-xs font-black uppercase tracking-widest border border-slate-200 shadow-sm btn-transition">
+                        <button onclick="handleLogout()" class="px-6 py-2.5 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-full text-xs font-black uppercase tracking-widest border border-slate-200 shadow-sm btn-transition relative z-20 cursor-pointer pointer-events-auto">
                             Log Out
                         </button>
                     </div>
                 `;
             } else {
                 container.innerHTML = `
-                    <button onclick="openModal('login')" class="text-sm font-black text-slate-500 uppercase tracking-widest px-4 py-2 hover:text-slate-900 btn-transition">Staff Portal</button>
-                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-3 rounded-full shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-0.5 btn-transition uppercase tracking-widest ml-2">Donate</button>
+                    <button onclick="openModal('login')" class="text-sm font-black text-slate-500 uppercase tracking-widest px-4 py-2 hover:text-slate-900 btn-transition relative z-20 cursor-pointer pointer-events-auto">Staff Portal</button>
+                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-3 rounded-full shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-0.5 btn-transition uppercase tracking-widest ml-2 relative z-20 cursor-pointer pointer-events-auto">Donate</button>
                 `;
             }
             lucide.createIcons();
@@ -319,12 +319,12 @@
                         </p>
                         
                         <div class="flex flex-wrap justify-center gap-6 z-10">
-                            <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-blue-600 shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1">Cebu Hotlines</button>
-                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border border-slate-300 text-slate-800 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 transition-all hover:-translate-y-1 backdrop-blur-md shadow-md">View Urgent Needs</button>
+                            <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-blue-600 shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1 relative z-20 cursor-pointer pointer-events-auto">Cebu Hotlines</button>
+                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border border-slate-300 text-slate-800 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 transition-all hover:-translate-y-1 backdrop-blur-md shadow-md relative z-20 cursor-pointer pointer-events-auto">View Urgent Needs</button>
                         </div>
                     </section>
 
-                    <section class="bg-section-gray py-24 px-6 relative z-20 border-b border-slate-200">
+                    <section class="bg-section-gray py-24 px-6 relative z-10 border-b border-slate-200">
                         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 -mt-32">
                             <div class="bg-white p-8 md:p-10 card-shadow rounded-[2.5rem] border border-slate-100 group hover:-translate-y-3 hover:shadow-2xl hover:shadow-slate-200/50 btn-transition">
                                 <div class="flex items-center gap-5 mb-8">
@@ -350,7 +350,7 @@
                         </div>
                     </section>
 
-                    <section id="urgent-needs" class="bg-section-white py-28 px-6 scroll-mt-10 relative border-b border-slate-200">
+                    <section id="urgent-needs" class="bg-section-white py-28 px-6 scroll-mt-10 relative border-b border-slate-200 z-10">
                         <div class="light-grid absolute inset-0 z-0 pointer-events-none"></div>
                         <div class="max-w-7xl mx-auto space-y-16 relative z-10">
                             <div class="flex flex-col md:flex-row justify-between items-center md:items-end border-b-2 border-slate-100 pb-10 gap-8">
@@ -363,7 +363,7 @@
                                     </div>
                                     <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Live Public Telemetry Radar</p>
                                 </div>
-                                <button onclick="openModal('donate')" class="text-sm font-black text-white bg-slate-900 px-10 py-5 hover:bg-blue-600 btn-transition rounded-full shadow-xl shadow-slate-900/20 uppercase tracking-widest hover:-translate-y-1">Submit Support</button>
+                                <button onclick="openModal('donate')" class="text-sm font-black text-white bg-slate-900 px-10 py-5 hover:bg-blue-600 btn-transition rounded-full shadow-xl shadow-slate-900/20 uppercase tracking-widest hover:-translate-y-1 relative z-20 cursor-pointer pointer-events-auto">Submit Support</button>
                             </div>
                             <div id="radar-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
                         </div>
@@ -392,7 +392,7 @@
                         const deficit = item.target - item.current;
                         if (deficit > 0) {
                             html += `
-                            <div class="bg-white p-8 md:p-10 card-shadow border border-slate-100 rounded-[2.5rem] relative overflow-hidden group hover:-translate-y-2 btn-transition hover:shadow-2xl hover:shadow-slate-200/50">
+                            <div class="bg-white p-8 md:p-10 card-shadow border border-slate-100 rounded-[2.5rem] relative overflow-hidden group hover:-translate-y-2 btn-transition hover:shadow-2xl hover:shadow-slate-200/50 z-10">
                                 <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-rose-500"></div>
                                 <div class="flex justify-between items-start mb-8">
                                     <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-3 py-1 bg-slate-50 rounded-md border border-slate-200">${item.category}</span>
@@ -421,7 +421,7 @@
         function renderHotlines() {
             const main = document.getElementById('main-content');
             main.innerHTML = `
-                <div class="bg-section-gray py-24 w-full">
+                <div class="bg-section-gray py-24 w-full z-10 relative">
                     <div class="max-w-4xl mx-auto space-y-12 animate-in fade-in px-6">
                         <div class="text-center space-y-4">
                             <div class="inline-block p-5 bg-blue-600 text-white rounded-2xl mb-4 shadow-lg shadow-blue-500/30"><i data-lucide="phone-forwarded" class="w-8 h-8"></i></div>
@@ -452,35 +452,35 @@
             if (!sessionProfile) return showView('landing');
             const main = document.getElementById('main-content');
             
-            // Generate contextual buttons based on role WITHOUT z-index overrides
+            // Dynamic Action Button depending on Role. z-20 keeps it clickable but below z-50 nav.
             let actionButtons = '';
             if (sessionProfile.role === ROLES.SUPER_ADMIN) {
-                actionButtons = `<button type="button" onclick="openModal('add_need')" class="w-full md:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1"><i data-lucide="radio" class="w-4 h-4"></i> Broadcast Need</button>`;
+                actionButtons = `<button type="button" onclick="openModal('add_need')" class="w-full md:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-1 relative z-20 cursor-pointer pointer-events-auto"><i data-lucide="radio" class="w-4 h-4"></i> Broadcast Need</button>`;
             } else if (sessionProfile.role === ROLES.ADMIN) {
-                actionButtons = `<button type="button" onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1"><i data-lucide="send" class="w-4 h-4"></i> Request PDRRMO Supply</button>`;
+                actionButtons = `<button type="button" onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-1 relative z-20 cursor-pointer pointer-events-auto"><i data-lucide="send" class="w-4 h-4"></i> Request PDRRMO Supply</button>`;
             } else if (sessionProfile.role === ROLES.BARANGAY) {
                 actionButtons = `
-                    <button type="button" onclick="openModal('brgy_request')" class="w-full md:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1"><i data-lucide="hand-heart" class="w-4 h-4"></i> Request City Hub Supply</button>
-                    <button type="button" onclick="openModal('officer_distribute')" class="w-full md:w-auto px-6 py-3.5 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 btn-transition shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1"><i data-lucide="users" class="w-4 h-4"></i> Log DAF Distribution</button>
+                    <button type="button" onclick="openModal('brgy_request')" class="w-full md:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-1 relative z-20 cursor-pointer pointer-events-auto"><i data-lucide="hand-heart" class="w-4 h-4"></i> Request City Hub Supply</button>
+                    <button type="button" onclick="openModal('officer_distribute')" class="w-full md:w-auto px-6 py-3.5 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-1 relative z-20 cursor-pointer pointer-events-auto"><i data-lucide="users" class="w-4 h-4"></i> Log DAF Distribution</button>
                 `;
             }
 
             main.innerHTML = `
-                <div class="max-w-7xl mx-auto px-6 space-y-8 py-12 animate-in fade-in">
-                    <header class="flex flex-col md:flex-row justify-between items-center bg-white p-8 card-shadow border border-slate-100 border-b-8 border-b-slate-900 rounded-[2.5rem] gap-8">
+                <div class="max-w-7xl mx-auto px-6 space-y-8 py-12 animate-in fade-in z-10 relative">
+                    <header class="flex flex-col md:flex-row justify-between items-center bg-white p-8 card-shadow border border-slate-100 border-b-8 border-b-slate-900 rounded-[2.5rem] gap-8 relative z-10">
                         <div class="flex items-center gap-6 w-full md:w-auto text-center md:text-left flex-col md:flex-row">
-                            <div class="w-20 h-20 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-4xl font-black shadow-xl shadow-slate-900/20">${sessionProfile.municipality === 'all' ? 'HQ' : sessionProfile.municipality.charAt(0).toUpperCase()}</div>
+                            <div class="w-20 h-20 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-4xl font-black shadow-xl shadow-slate-900/20 flex-shrink-0">${sessionProfile.municipality === 'all' ? 'HQ' : sessionProfile.municipality.charAt(0).toUpperCase()}</div>
                             <div>
                                 <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Active Personnel</p>
                                 <h2 class="text-3xl md:text-4xl font-black text-slate-900 uppercase leading-none tracking-tighter italic">${sessionProfile.municipality === 'all' ? 'Provincial Command' : sessionProfile.municipality.replace('_', ' ')} Hub</h2>
                                 <p class="text-sm font-bold text-slate-500 mt-2 uppercase tracking-widest">${ROLE_DISPLAY_NAMES[sessionProfile.role] || sessionProfile.role}</p>
                             </div>
                         </div>
-                        <div class="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+                        <div class="flex flex-col sm:flex-row w-full md:w-auto gap-3 flex-shrink-0">
                             ${actionButtons}
                         </div>
                     </header>
-                    <div id="dash-content"></div>
+                    <div id="dash-content" class="relative z-10"></div>
                 </div>
             `;
             
@@ -504,22 +504,22 @@
                             <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4 gap-4 flex-wrap">
                                 <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 text-slate-900"><i data-lucide="zap" class="text-rose-500 w-6 h-6"></i> Needs Controller</h3>
                             </div>
-                            <div id="sa-urgent-needs" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="sa-urgent-needs" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
                         <div class="bg-slate-900 p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-blue-500 text-white shadow-2xl shadow-slate-900/20">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-white/10 pb-4"><i data-lucide="package" class="text-blue-400 w-6 h-6"></i> Central Capitol Ledger</h3>
-                            <div id="sa-inventory" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="sa-inventory" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="heart" class="text-rose-500 w-6 h-6"></i> Public Donations Queue</h3>
-                            <div id="sa-donations" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="sa-donations" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="clipboard-list" class="text-blue-600 w-6 h-6"></i> C/MDRRMO Requisitions</h3>
-                            <div id="sa-requests" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="sa-requests" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
                     </div>
                 </div>
@@ -531,7 +531,6 @@
             onValue(ref(db, 'inventory'), (snapshot) => {
                 const data = snapshot.val();
                 globalInventory = data || {};
-                
                 const needsContainer = document.getElementById('sa-urgent-needs');
                 const invContainer = document.getElementById('sa-inventory');
                 
@@ -546,7 +545,6 @@
 
                 Object.keys(data).forEach(id => {
                     const item = data[id];
-                    
                     invHtml += `
                         <div class="p-5 bg-white/5 rounded-2xl border border-white/10 flex flex-col justify-center items-center text-center hover:bg-white/10 btn-transition">
                             <p class="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1.5 line-clamp-1">${item.category}</p>
@@ -584,13 +582,14 @@
                 Object.keys(data).forEach(id => {
                     const d = data[id];
                     if(d.status === 'processed') return; 
+                    // Using flex-col sm:flex-row prevents buttons from getting squished
                     html += `
-                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-md btn-transition">
+                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-white hover:shadow-md btn-transition relative z-10">
                             <div>
                                 <h4 class="font-black text-slate-900 text-base italic uppercase tracking-tight">${d.donor}</h4>
                                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">Item: <span class="text-rose-600 font-black">${d.item}</span></p>
                             </div>
-                            <button type="button" onclick="window.prepareProcessDonation('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-rose-600 shadow-md btn-transition">Process</button>
+                            <button type="button" onclick="window.prepareProcessDonation('${id}')" class="w-full sm:w-auto text-[10px] font-black bg-slate-900 text-white px-6 py-3 rounded-xl uppercase tracking-widest hover:bg-rose-600 shadow-md btn-transition hover:-translate-y-0.5 relative z-20 cursor-pointer pointer-events-auto flex-shrink-0">Process</button>
                         </div>
                     `;
                 });
@@ -610,20 +609,21 @@
                     let actionHtml = '';
                     if (r.status === 'pending' || r.status === 'queued') {
                         actionHtml = `
-                            <button type="button" onclick="window.prepareFulfillRequest('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition flex-shrink-0">Allocate & Dispatch Fleet</button>
+                            <button type="button" onclick="window.prepareFulfillRequest('${id}')" class="w-full sm:w-auto text-[10px] font-black bg-blue-600 text-white px-6 py-3.5 rounded-xl uppercase tracking-widest hover:bg-slate-900 shadow-md btn-transition relative z-20 cursor-pointer pointer-events-auto flex-shrink-0 whitespace-nowrap text-center">Allocate & Dispatch Fleet</button>
                         `;
                     } else {
-                        actionHtml = `<span class="text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">Fleet Dispatched</span>`;
+                        actionHtml = `<span class="text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-4 py-2 rounded-lg whitespace-nowrap text-center w-full sm:w-auto">Fleet Dispatched</span>`;
                     }
                     
+                    // The flex-col sm:flex-row is critical here to prevent the button from becoming unclickable due to width constraint
                     html += `
-                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
-                            <div class="pr-4">
+                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-white hover:shadow-md btn-transition relative z-10">
+                            <div class="pr-0 sm:pr-4 w-full">
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${r.location.replace('_', ' ')} HUB</span>
                                 <h4 class="font-black text-slate-900 text-base uppercase mt-1 italic tracking-tight">${r.items}</h4>
                                 ${r.note ? `<p class="text-[10px] font-medium text-slate-500 mt-2 line-clamp-2 italic border-l-2 border-slate-300 pl-2">"${r.note}"</p>` : ''}
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="w-full sm:w-auto flex-shrink-0 relative z-20 pointer-events-auto">
                                 ${actionHtml}
                             </div>
                         </div>
@@ -632,6 +632,16 @@
                 container.innerHTML = html || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">All Requests Handled</p>';
             });
         }
+
+        window.prepareProcessDonation = (id) => {
+            processingDonationId = id;
+            openModal('process_donation');
+        };
+
+        window.prepareFulfillRequest = (id) => {
+            processingRequestId = id;
+            openModal('fulfill_request');
+        };
 
 
         // ==========================================
@@ -647,29 +657,29 @@
                                 <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="warehouse" class="text-blue-400 w-6 h-6"></i> C/MDRRMO Inventory</h3>
                                 <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest border border-blue-400/30 bg-blue-400/10 px-3 py-1.5 rounded-lg">Avail for BDRRMC</span>
                             </div>
-                            <div id="admin-hub-inventory" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="admin-hub-inventory" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
 
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100 border-t-8 border-t-orange-500">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="truck" class="text-orange-500 w-6 h-6"></i> Incoming LGU Fleet Cargo</h3>
-                            <div id="admin-incoming-cargo" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="admin-incoming-cargo" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="clipboard-list" class="text-blue-600 w-6 h-6"></i> Barangay Requisitions</h3>
-                            <div id="admin-brgy-requests" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="admin-brgy-requests" class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
                         
                         <div class="space-y-8">
                             <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
                                 <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="users" class="w-6 h-6 text-rose-500"></i> Pending Approvals</h3>
-                                <div id="admin-pending-users" class="space-y-4 max-h-40 overflow-y-auto custom-scrollbar pr-2"></div>
+                                <div id="admin-pending-users" class="space-y-4 max-h-40 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                             </div>
                             <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
                                 <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="shield-check" class="w-6 h-6 text-emerald-600"></i> Active Personnel</h3>
-                                <div id="admin-active-users" class="space-y-4 max-h-40 overflow-y-auto custom-scrollbar pr-2"></div>
+                                <div id="admin-active-users" class="space-y-4 max-h-40 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                             </div>
                         </div>
                     </div>
@@ -727,7 +737,7 @@
                         else if (r.status === 'in_transit') { statusText = '<span class="w-1.5 h-1.5 bg-blue-500 rounded-full active-dot"></span> In Transit via LGU Fleet'; isMoving = true; }
                         
                         html += `
-                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
+                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
                                 <div>
                                     <span class="text-[9px] font-black ${isMoving ? 'text-blue-500 flex items-center gap-1.5' : 'text-orange-500'} uppercase tracking-widest mb-1.5 block">
                                         ${statusText}
@@ -755,19 +765,19 @@
                     let actionHtml = '';
                     if (r.status === 'pending' || r.status === 'queued') {
                         actionHtml = `
-                            <button type="button" onclick="window.prepareApproveBrgy('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition">Approve &<br>Dispatch Fleet</button>
+                            <button type="button" onclick="window.prepareApproveBrgy('${id}')" class="w-full sm:w-auto text-[10px] font-black bg-blue-600 text-white px-6 py-3.5 rounded-xl uppercase tracking-widest hover:bg-slate-900 shadow-md btn-transition relative z-20 cursor-pointer pointer-events-auto flex-shrink-0 whitespace-nowrap text-center">Approve & Dispatch Fleet</button>
                         `;
                     } else {
-                        actionHtml = `<span class="text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg">Fleet Dispatched</span>`;
+                        actionHtml = `<span class="w-full sm:w-auto text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 bg-slate-50 px-4 py-2 rounded-lg whitespace-nowrap text-center">Fleet Dispatched</span>`;
                     }
                     
                     html += `
-                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
-                            <div class="pr-4">
+                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-white hover:shadow-md btn-transition relative z-10">
+                            <div class="pr-0 sm:pr-4 w-full">
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">From: ${r.officer_name}</span>
                                 <h4 class="font-black text-slate-900 text-base uppercase mt-1 italic tracking-tight">${r.qty}x ${r.item}</h4>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="w-full sm:w-auto flex-shrink-0 relative z-20 pointer-events-auto">
                                 ${actionHtml}
                             </div>
                         </div>
@@ -788,9 +798,9 @@
                     if (user.municipality !== sessionProfile.municipality) return;
                     
                     const card = `
-                        <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 mb-3 hover:bg-white hover:shadow-sm btn-transition">
+                        <div class="p-4 bg-slate-50 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-slate-100 mb-3 hover:bg-white hover:shadow-sm btn-transition relative z-10">
                             <div><h4 class="font-black text-slate-900 text-sm uppercase tracking-tight italic">${user.name || 'Unknown User'}</h4><p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">${ROLE_DISPLAY_NAMES[user.role] || user.role}</p></div>
-                            ${user.status === 'pending' ? `<button type="button" onclick="approveUser('${uid}')" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition">Approve</button>` : `<span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-lg">Approved</span>`}
+                            ${user.status === 'pending' ? `<button type="button" onclick="approveUser('${uid}')" class="w-full sm:w-auto px-6 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition relative z-20 cursor-pointer pointer-events-auto flex-shrink-0">Approve</button>` : `<span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-lg w-full sm:w-auto text-center">Approved</span>`}
                         </div>`;
                     if (user.status === 'pending') pendingHtml += card; else activeHtml += card;
                 });
@@ -820,7 +830,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100 border-t-8 border-t-blue-500">
                         <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="truck" class="text-blue-500 w-6 h-6"></i> HQ to City Hub Tasks</h3>
-                        <div id="logistics-hq-tasks" class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
+                        <div id="logistics-hq-tasks" class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                     </div>
                     <div class="bg-slate-900 text-white p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-fuchsia-500 relative overflow-hidden shadow-2xl shadow-slate-900/20">
                         <div class="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><i data-lucide="map-pin" class="w-64 h-64"></i></div>
@@ -833,7 +843,6 @@
         }
 
         function initLogisticsListeners() {
-            // Track HQ to City
             onValue(ref(db, 'requests'), (snapshot) => {
                 const data = snapshot.val();
                 const container = document.getElementById('logistics-hq-tasks');
@@ -853,20 +862,22 @@
 
                         if (r.status === 'ready_for_pickup') {
                             statusText = 'Ready at Capitol';
-                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg mt-4">Confirm Pick-up from HQ</button>`;
+                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg mt-4 relative z-20 cursor-pointer pointer-events-auto flex-shrink-0">Confirm Pick-up from HQ</button>`;
                         } else if (r.status === 'in_transit') {
                             statusText = '<span class="w-2.5 h-2.5 bg-blue-500 rounded-full active-dot shadow-[0_0_10px_rgba(59,130,246,0.8)]"></span> Driving to City Hub';
-                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-blue-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg mt-4">Mark Delivered to Hub</button>`;
+                            actionHtml = `<button type="button" onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-blue-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg mt-4 relative z-20 cursor-pointer pointer-events-auto flex-shrink-0">Mark Delivered to Hub</button>`;
                         }
 
                         html += `
-                            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm relative z-20">
+                            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm relative z-10 flex flex-col">
                                 <div class="flex justify-between items-start mb-4">
                                     <span class="text-[10px] font-black text-blue-600 flex items-center gap-2 uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-md border border-blue-100">${statusText}</span>
                                     <i data-lucide="building" class="text-slate-400 w-5 h-5"></i>
                                 </div>
                                 <h4 class="font-black text-slate-900 text-2xl uppercase italic tracking-tighter leading-tight mb-2">${qtyDesc}${itemDesc}</h4>
-                                ${actionHtml}
+                                <div class="relative z-20 pointer-events-auto w-full">
+                                    ${actionHtml}
+                                </div>
                             </div>
                         `;
                     }
@@ -875,7 +886,6 @@
                 lucide.createIcons();
             });
 
-            // Track City Hub to Barangay
             onValue(ref(db, 'brgy_requests'), (snapshot) => {
                 const data = snapshot.val();
                 const container = document.getElementById('logistics-brgy-tasks');
@@ -892,21 +902,23 @@
 
                         if (r.status === 'ready_for_pickup') {
                             statusText = 'Ready at City Hub';
-                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'in_transit')" class="w-full bg-white text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-100 btn-transition shadow-lg mt-4">Begin Transit to Barangay</button>`;
+                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'in_transit')" class="w-full bg-white text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-100 btn-transition shadow-lg mt-4 relative z-20 cursor-pointer pointer-events-auto flex-shrink-0">Begin Transit to Barangay</button>`;
                         } else if (r.status === 'in_transit') {
                             statusText = '<span class="w-2.5 h-2.5 bg-fuchsia-400 rounded-full active-dot shadow-[0_0_10px_rgba(217,70,239,0.8)]"></span> Driving to Barangay';
-                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'arrived')" class="w-full bg-fuchsia-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-700 btn-transition shadow-lg mt-4">Mark Delivered to Barangay</button>`;
+                            actionHtml = `<button type="button" onclick="window.updateBrgyRequestStatus('${id}', 'arrived')" class="w-full bg-fuchsia-600 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-700 btn-transition shadow-lg mt-4 relative z-20 cursor-pointer pointer-events-auto flex-shrink-0">Mark Delivered to Barangay</button>`;
                         }
 
                         html += `
-                            <div class="p-6 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm relative z-20 hover:bg-white/20 btn-transition">
+                            <div class="p-6 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm relative z-10 hover:bg-white/20 btn-transition flex flex-col">
                                 <div class="flex justify-between items-start mb-4">
                                     <span class="text-[10px] font-black text-fuchsia-300 flex items-center gap-2 uppercase tracking-widest">${statusText}</span>
                                     <i data-lucide="map" class="text-white/40 w-5 h-5"></i>
                                 </div>
                                 <h4 class="font-black text-white text-2xl uppercase italic tracking-tighter leading-tight mb-2">${r.dispatched_qty}x ${r.dispatched_item}</h4>
                                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">To: ${r.officer_name}</p>
-                                ${actionHtml}
+                                <div class="relative z-20 pointer-events-auto w-full">
+                                    ${actionHtml}
+                                </div>
                             </div>
                         `;
                     }
@@ -996,18 +1008,18 @@
                                 <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="warehouse" class="text-blue-500 w-6 h-6"></i> Barangay Inventory</h3>
                                 <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-4 py-2 rounded-lg">Avail for DAF Distribution</span>
                             </div>
-                            <div id="officer-brgy-inventory" class="grid grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="officer-brgy-inventory" class="grid grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
 
                         <div class="bg-white p-8 card-shadow rounded-[2.5rem] border border-slate-100">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-slate-50 pb-4 text-slate-900"><i data-lucide="clipboard-list" class="text-blue-600 w-6 h-6"></i> My Requisitions to City Hub</h3>
-                            <div id="officer-my-requests" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
+                            <div id="officer-my-requests" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                         </div>
                     </div>
 
                     <div class="bg-slate-900 p-8 card-shadow rounded-[2.5rem] border border-slate-800 text-white shadow-2xl shadow-slate-900/20">
                         <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3 mb-6 border-b border-white/10 pb-4 text-white"><i data-lucide="clipboard-check" class="text-emerald-400 w-6 h-6"></i> DAF Distribution Ledger</h3>
-                        <div id="officer-distributions" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
+                        <div id="officer-distributions" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2 relative z-10"></div>
                     </div>
                 </div>
             `;
@@ -1015,10 +1027,9 @@
         }
 
         function initOfficerListeners() {
-            // Listen to Specific Barangay Inventory based on UID
             onValue(ref(db, `brgy_inventory/${sessionProfile.uid}`), (snapshot) => {
                 const data = snapshot.val();
-                officerBrgyInvOptions = ''; // Reset
+                officerBrgyInvOptions = ''; 
                 
                 const container = document.getElementById('officer-brgy-inventory');
                 
@@ -1051,26 +1062,24 @@
                 if (!data) { container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No requisitions submitted.</p>'; return; }
                 
                 let html = '';
-                // Sort by timestamp
                 const reqArray = Object.keys(data).map(id => ({ id, ...data[id] })).sort((a,b) => b.timestamp - a.timestamp);
                 
                 reqArray.forEach(r => {
-                    if (r.officer_uid !== sessionProfile.uid) return; // Only see my requests
+                    if (r.officer_uid !== sessionProfile.uid) return; 
                     
                     let statusText = '';
                     let statusColor = '';
-                    if (r.status === 'pending') { statusText = 'Awaiting City Hub'; statusColor = 'text-orange-500 bg-orange-50 border-orange-200'; }
-                    else if (r.status === 'queued') { statusText = 'Queued at City Hub'; statusColor = 'text-rose-500 bg-rose-50 border-rose-200'; }
+                    if (r.status === 'pending' || r.status === 'queued') { statusText = 'Awaiting City Hub'; statusColor = 'text-orange-500 bg-orange-50 border-orange-200'; }
                     else if (r.status === 'ready_for_pickup') { statusText = 'Allocated. Awaiting Fleet.'; statusColor = 'text-blue-500 bg-blue-50 border-blue-200'; }
                     else if (r.status === 'in_transit') { statusText = 'Fleet En Route'; statusColor = 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200'; }
                     else if (r.status === 'arrived') { statusText = 'Arrived'; statusColor = 'text-emerald-600 bg-emerald-50 border-emerald-200'; }
                     
                     html += `
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white hover:shadow-md btn-transition">
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-white hover:shadow-md btn-transition relative z-10">
                             <div>
                                 <h4 class="font-black text-slate-900 text-sm uppercase mt-1 italic tracking-tight">${r.qty}x ${r.item}</h4>
                             </div>
-                            <span class="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${statusColor}">${statusText}</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${statusColor} whitespace-nowrap">${statusText}</span>
                         </div>
                     `;
                 });
@@ -1090,7 +1099,7 @@
                     const dDate = new Date(d.timestamp).toLocaleString();
 
                     html += `
-                        <div class="p-5 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center hover:bg-white/10 btn-transition">
+                        <div class="p-5 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center hover:bg-white/10 btn-transition relative z-10">
                             <div>
                                 <span class="text-[9px] font-black text-emerald-400 uppercase tracking-widest">DAF Holder: ${d.family_name}</span>
                                 <h4 class="font-black text-white text-base uppercase mt-1.5 tracking-tight">${d.qty}x ${d.item}</h4>
@@ -1131,8 +1140,8 @@
                 <form id="auth-form" class="space-y-6">
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-bold focus:border-blue-500 focus:bg-white transition-all shadow-sm" required></div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-bold focus:border-blue-500 focus:bg-white transition-all shadow-sm" required></div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 mt-2 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition">Login</button>
-                    <p class="text-center text-xs font-bold text-slate-500 mt-6">New Personnel? <button type="button" onclick="openModal('signup')" class="text-blue-600 font-black hover:underline transition-colors">Register Here</button></p>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 mt-2 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition relative z-20 cursor-pointer pointer-events-auto">Login</button>
+                    <p class="text-center text-xs font-bold text-slate-500 mt-6">New Personnel? <button type="button" onclick="openModal('signup')" class="text-blue-600 font-black hover:underline transition-colors relative z-20 cursor-pointer pointer-events-auto">Register Here</button></p>
                 </form>`;
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'login');
             
@@ -1147,7 +1156,7 @@
                     </div>
                     <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label><input type="email" id="reg-email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 focus:bg-white transition-all" required></div>
                     <div class="space-y-1.5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label><input type="password" id="reg-pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:border-blue-500 focus:bg-white transition-all" required></div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 mt-4 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition">Register Account</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 mt-4 shadow-xl shadow-slate-900/20 hover:-translate-y-0.5 btn-transition relative z-20 cursor-pointer pointer-events-auto">Register Account</button>
                 </form>`;
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'signup');
             
@@ -1159,7 +1168,7 @@
                     <form id="donate-form" class="space-y-6">
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Donor Name</label><input type="text" id="don-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 focus:bg-white transition-all" required></div>
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Support Item(s)</label><input type="text" id="don-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 focus:bg-white transition-all" placeholder="e.g. 500 Sacks of Rice" required></div>
-                        <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:shadow-rose-600/50 hover:-translate-y-0.5 btn-transition mt-4">Submit Donation</button>
+                        <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:shadow-rose-600/50 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Submit Donation</button>
                     </form>
                 </div>`;
                 document.getElementById('donate-form').onsubmit = async (e) => {
@@ -1190,7 +1199,7 @@
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Target Total Needed</label><input type="number" id="need-target" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" required></div>
                         <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Stock</label><input type="number" id="need-current" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" value="0" required></div>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-rose-600 hover:-translate-y-0.5 btn-transition mt-4">Broadcast to Public</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-rose-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Broadcast to Public</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('need-cat', 'need-item'), 0);
@@ -1232,7 +1241,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Added</label>
                         <input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4">Add to Central Inventory</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Add to Central Inventory</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('proc-cat', 'proc-item'), 0);
@@ -1279,7 +1288,7 @@
                 <form id="req-form" class="space-y-6">
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">General Need Description</label><input type="text" id="req-desc" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="e.g. Relief goods for 500 evacuated families" required></div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Additional Notes</label><textarea id="req-note" rows="3" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all custom-scrollbar"></textarea></div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4">Transmit Request</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Transmit Request</button>
                 </form>`;
                 
                 document.getElementById('req-form').onsubmit = async (e) => {
@@ -1316,7 +1325,7 @@
                         <select id="breq-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all"></select>
                     </div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Needed</label><input type="number" id="breq-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required></div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4">Transmit Request</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Transmit Request</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('breq-cat', 'breq-item'), 0);
@@ -1361,7 +1370,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity to Dispatch</label>
                         <input type="number" id="abrgy-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4">Approve & Dispatch Fleet</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Approve & Dispatch Fleet</button>
                 </form>`;
 
                 document.getElementById('approve-brgy-form').onsubmit = async (e) => {
@@ -1416,7 +1425,7 @@
                         <select id="dist-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all">${officerBrgyInvOptions}</select>
                     </div>
                     <div class="space-y-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Given</label><input type="number" id="dist-qty" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-rose-500 transition-all" required></div>
-                    <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 hover:-translate-y-0.5 btn-transition mt-4">Confirm Distribution</button>
+                    <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-600/30 hover:bg-rose-700 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Confirm Distribution</button>
                 </form>`;
                 
                 document.getElementById('dist-form').onsubmit = async (e) => {
@@ -1479,7 +1488,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity to Dispatch</label>
                         <input type="number" id="ful-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4">Deduct & Dispatch Fleet</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-20 cursor-pointer pointer-events-auto">Deduct & Dispatch Fleet</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('ful-cat', 'ful-item'), 0);
