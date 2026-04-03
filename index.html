@@ -156,7 +156,7 @@
         <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-300">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-sm">
                 <h3 id="modal-title" class="text-sm font-black text-slate-900 uppercase tracking-widest">System Access</h3>
-                <button onclick="closeModal()" class="p-2.5 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full btn-transition"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <button onclick="closeModal()" class="p-2.5 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full btn-transition relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div id="modal-body" class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar"></div>
         </div>
@@ -208,9 +208,9 @@
 
         const ROLE_DISPLAY_NAMES = {
             super_admin: 'PDRRMO Command',
-            admin: 'C/MDRRMO Hub',
-            logistic: 'LGU Fleet',
-            officer: 'BDRRMC Officer'
+            admin: 'C/MDRRMO Hub Admin',
+            logistic: 'LGU Fleet Transporter',
+            officer: 'BDRRMC Field Officer'
         };
 
         const INVENTORY_CATEGORIES = [
@@ -273,7 +273,7 @@
             } else {
                 container.innerHTML = `
                     <button onclick="openModal('login')" class="text-sm font-black text-slate-500 uppercase tracking-widest px-4 py-2 hover:text-slate-900 btn-transition pointer-events-auto">Staff Portal</button>
-                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-3 rounded-full shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-0.5 btn-transition uppercase tracking-widest ml-2 pointer-events-auto">Donate</button>
+                    <button onclick="openModal('donate')" class="text-xs font-black text-white bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-3 rounded-full shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-0.5 btn-transition uppercase tracking-widest ml-2 pointer-events-auto cursor-pointer relative z-50">Donate</button>
                 `;
             }
             lucide.createIcons();
@@ -313,8 +313,8 @@
                         </p>
                         
                         <div class="flex flex-wrap justify-center gap-6 z-10">
-                            <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-blue-600 shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1">Cebu Hotlines</button>
-                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border border-slate-300 text-slate-800 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 transition-all hover:-translate-y-1 backdrop-blur-md shadow-md">View Urgent Needs</button>
+                            <button onclick="showView('hotlines')" class="bg-slate-900 text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-blue-600 shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer">Cebu Hotlines</button>
+                            <button onclick="document.getElementById('urgent-needs').scrollIntoView({behavior:'smooth'})" class="bg-white border border-slate-300 text-slate-800 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 transition-all hover:-translate-y-1 backdrop-blur-md shadow-md relative z-50 pointer-events-auto cursor-pointer">View Urgent Needs</button>
                         </div>
                     </section>
 
@@ -357,7 +357,7 @@
                                     </div>
                                     <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Live Public Telemetry Radar</p>
                                 </div>
-                                <button onclick="openModal('donate')" class="text-sm font-black text-white bg-slate-900 px-10 py-5 hover:bg-blue-600 btn-transition rounded-full shadow-xl shadow-slate-900/20 uppercase tracking-widest hover:-translate-y-1">Submit Support</button>
+                                <button onclick="openModal('donate')" class="text-sm font-black text-white bg-slate-900 px-10 py-5 hover:bg-blue-600 btn-transition rounded-full shadow-xl shadow-slate-900/20 uppercase tracking-widest hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer">Submit Support</button>
                             </div>
                             <div id="radar-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
                         </div>
@@ -449,11 +449,11 @@
             // Dynamic Action Button depending on Role
             let actionButtons = '';
             if (sessionProfile.role === ROLES.SUPER_ADMIN) {
-                actionButtons = `<button onclick="openModal('add_need')" class="w-full md:w-auto px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5"><i data-lucide="radio" class="w-4 h-4"></i> Broadcast Need</button>`;
+                actionButtons = `<button onclick="openModal('add_need')" class="w-full md:w-auto px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="radio" class="w-4 h-4"></i> Broadcast Need</button>`;
             } else if (sessionProfile.role === ROLES.ADMIN) {
-                actionButtons = `<button onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5"><i data-lucide="send" class="w-4 h-4"></i> Request HQ Supplies</button>`;
+                actionButtons = `<button onclick="openModal('admin_request')" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="send" class="w-4 h-4"></i> Request PDRRMO Supplies</button>`;
             } else if (sessionProfile.role === ROLES.BARANGAY) {
-                actionButtons = `<button onclick="openModal('officer_distribute')" class="w-full md:w-auto px-6 py-3 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5"><i data-lucide="users" class="w-4 h-4"></i> Log DAF Distribution</button>`;
+                actionButtons = `<button onclick="openModal('officer_distribute')" class="w-full md:w-auto px-6 py-3 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 btn-transition shadow-lg flex justify-center items-center gap-2 hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer"><i data-lucide="users" class="w-4 h-4"></i> Log DAF Distribution</button>`;
             }
 
             main.innerHTML = `
@@ -579,7 +579,7 @@
                                 <h4 class="font-black text-slate-900 text-base italic uppercase tracking-tight">${d.donor}</h4>
                                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">Item: <span class="text-rose-600 font-black">${d.item}</span></p>
                             </div>
-                            <button onclick="window.prepareProcessDonation('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-rose-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5">Process</button>
+                            <button onclick="window.prepareProcessDonation('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-rose-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5 relative z-50 pointer-events-auto cursor-pointer">Process</button>
                         </div>
                     `;
                 });
@@ -601,8 +601,9 @@
                             <div class="pr-4">
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${r.location.replace('_', ' ')} HUB</span>
                                 <h4 class="font-black text-slate-900 text-base uppercase mt-1.5 italic tracking-tight">${r.items}</h4>
+                                ${r.note ? `<p class="text-[10px] font-medium text-slate-500 mt-2 line-clamp-2 italic border-l-2 border-slate-300 pl-2">"${r.note}"</p>` : ''}
                             </div>
-                            <button onclick="window.prepareFulfillRequest('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5 flex-shrink-0 text-center leading-tight">Allocate<br>For Pick-up</button>
+                            <button onclick="window.prepareFulfillRequest('${id}')" class="text-[10px] font-black bg-slate-900 text-white px-5 py-2.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 shadow-md shadow-slate-900/20 btn-transition hover:-translate-y-0.5 flex-shrink-0 text-center leading-tight relative z-50 pointer-events-auto cursor-pointer">Allocate<br>To LGU</button>
                         </div>
                     `;
                 });
@@ -692,7 +693,7 @@
                                     <span class="text-[9px] font-black ${isMoving ? 'text-blue-500 flex items-center gap-1.5' : 'text-orange-500'} uppercase tracking-widest mb-1.5 block">
                                         ${isMoving ? '<span class="w-1.5 h-1.5 bg-blue-500 rounded-full active-dot"></span> In Transit via LGU Fleet' : 'Awaiting Fleet Pick-up at HQ'}
                                     </span>
-                                    <h4 class="font-black text-slate-900 text-lg uppercase italic tracking-tight">${r.dispatched_qty}x ${r.dispatched_item}</h4>
+                                    <h4 class="font-black text-slate-900 text-lg uppercase italic tracking-tight">${r.dispatched_qty || '?'}x ${r.dispatched_item || r.items}</h4>
                                 </div>
                                 <i data-lucide="${isMoving ? 'truck' : 'box'}" class="w-6 h-6 ${isMoving ? 'text-blue-400' : 'text-slate-300'}"></i>
                             </div>
@@ -717,7 +718,7 @@
                     const card = `
                         <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 mb-3">
                             <div><h4 class="font-black text-slate-900 text-sm uppercase tracking-tight italic">${user.name || 'Unknown User'}</h4><p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">${ROLE_DISPLAY_NAMES[user.role] || user.role}</p></div>
-                            ${user.status === 'pending' ? `<button onclick="approveUser('${uid}')" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition">Approve</button>` : `<span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-lg">Approved</span>`}
+                            ${user.status === 'pending' ? `<button onclick="approveUser('${uid}')" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 shadow-md btn-transition relative z-50 pointer-events-auto cursor-pointer">Approve</button>` : `<span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-lg">Approved</span>`}
                         </div>`;
                     if (user.status === 'pending') pendingHtml += card; else activeHtml += card;
                 });
@@ -725,6 +726,12 @@
                 activeContainer.innerHTML = activeHtml || `<p class="text-sm font-bold text-slate-400 text-center py-8 uppercase tracking-widest">No active staff.</p>`;
             });
         }
+
+        window.approveUser = async (uid) => {
+            if(!db) return;
+            try { await update(ref(db, `users/${uid}`), { status: 'approved' }); notify('Personnel Approved', 'success'); } 
+            catch(e) { notify('Permission Denied', 'error'); }
+        };
 
 
         // ==========================================
@@ -767,6 +774,9 @@
                 Object.keys(data).forEach(id => {
                     const r = data[id];
                     if (r.location !== sessionProfile.municipality) return;
+                    
+                    const itemDesc = r.dispatched_item || r.items;
+                    const qtyDesc = r.dispatched_qty ? `${r.dispatched_qty}x ` : '';
 
                     if (r.status === 'ready_for_pickup') {
                         pickupHtml += `
@@ -775,9 +785,9 @@
                                     <span class="text-[10px] font-black text-orange-600 uppercase tracking-widest px-3 py-1 bg-orange-50 rounded-md border border-orange-100">HQ Allocation Ready</span>
                                     <i data-lucide="map-pin" class="text-slate-400 w-5 h-5"></i>
                                 </div>
-                                <h4 class="font-black text-slate-900 text-2xl uppercase italic tracking-tighter leading-tight mb-2">${r.dispatched_qty}x ${r.dispatched_item}</h4>
+                                <h4 class="font-black text-slate-900 text-2xl uppercase italic tracking-tighter leading-tight mb-2">${qtyDesc}${itemDesc}</h4>
                                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">Original Request: ${r.items}</p>
-                                <button onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer">Confirm Pick-up from Capitol</button>
+                                <button onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer mt-4">Confirm Pick-up from Capitol</button>
                             </div>
                         `;
                     } else if (r.status === 'in_transit') {
@@ -787,7 +797,7 @@
                                     <span class="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-2"><span class="w-2.5 h-2.5 bg-blue-400 rounded-full active-dot shadow-[0_0_10px_rgba(96,165,250,0.8)]"></span> Driving to ${r.location.replace('_', ' ')} Hub</span>
                                     <i data-lucide="truck" class="text-white/40 w-5 h-5"></i>
                                 </div>
-                                <h4 class="font-black text-white text-2xl uppercase italic tracking-tighter leading-tight mb-6">${r.dispatched_qty}x ${r.dispatched_item}</h4>
+                                <h4 class="font-black text-white text-2xl uppercase italic tracking-tighter leading-tight mb-6">${qtyDesc}${itemDesc}</h4>
                                 <button onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-white text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white btn-transition shadow-lg hover:-translate-y-1 relative z-50 pointer-events-auto cursor-pointer">Mark Arrived at C/MDRRMO Hub</button>
                             </div>
                         `;
@@ -803,30 +813,37 @@
         window.updateRequestStatus = async (id, newStatus) => {
             if(!db) return;
             
-            // If the logistics officer has arrived, we transfer goods to the City Hub
-            if (newStatus === 'arrived') {
-                const reqSnap = await get(ref(db, `requests/${id}`));
-                const req = reqSnap.val();
+            try {
+                if (newStatus === 'arrived') {
+                    const reqSnap = await get(ref(db, `requests/${id}`));
+                    const req = reqSnap.val();
+                    
+                    const itemName = req.dispatched_item || req.items || 'Unknown Supply';
+                    const qty = req.dispatched_qty || 1;
+                    
+                    const dbId = itemName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    const hubInvRef = ref(db, `hub_inventory/${req.location}/${dbId}`);
+                    
+                    const invSnap = await get(hubInvRef);
+                    let currentQty = 0;
+                    if (invSnap.exists()) { currentQty = invSnap.val().current || 0; }
+                    
+                    await update(hubInvRef, {
+                        category: itemName, // Simple category fallback
+                        item_name: itemName,
+                        current: currentQty + qty
+                    });
+                    
+                    notify('Cargo Delivered to Local Hub!', 'success');
+                } else {
+                    notify('Cargo Secured. Drive safely.', 'success');
+                }
                 
-                const dbId = req.dispatched_item.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                const hubInvRef = ref(db, `hub_inventory/${req.location}/${dbId}`);
-                
-                const invSnap = await get(hubInvRef);
-                let currentQty = 0;
-                if (invSnap.exists()) { currentQty = invSnap.val().current || 0; }
-                
-                await update(hubInvRef, {
-                    category: req.dispatched_item,
-                    item_name: req.dispatched_item,
-                    current: currentQty + req.dispatched_qty
-                });
-                
-                notify('Cargo Delivered to Local Hub!', 'success');
-            } else {
-                notify('Cargo Secured. Drive safely.', 'success');
+                await update(ref(db, `requests/${id}`), { status: newStatus });
+            } catch (error) {
+                console.error(error);
+                notify('Database Error: Firebase Rules blocked access.', 'error');
             }
-            
-            await update(ref(db, `requests/${id}`), { status: newStatus });
         };
 
 
@@ -840,7 +857,7 @@
                     <div class="bg-white p-8 card-shadow rounded-[2.5rem] border-t-8 border-t-blue-500 shadow-inner border border-slate-100">
                         <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4 gap-4 flex-wrap">
                             <h3 class="text-xl font-black uppercase tracking-tighter italic flex items-center gap-3"><i data-lucide="warehouse" class="text-blue-500 w-6 h-6"></i> Available at C/MDRRMO Hub</h3>
-                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-4 py-2 rounded-lg">Available for DAF Distribution</span>
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 bg-slate-50 px-4 py-2 rounded-lg">Check before DAF Distribution</span>
                         </div>
                         <div id="officer-hub-inventory" class="grid grid-cols-2 md:grid-cols-5 gap-4 max-h-80 overflow-y-auto custom-scrollbar pr-2"></div>
                     </div>
@@ -884,7 +901,6 @@
                 if (!data) { container.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No distributions logged yet.</p>'; return; }
                 
                 let html = '';
-                // Convert object to array to easily reverse it (newest first)
                 const distArray = Object.keys(data).map(id => ({ id, ...data[id] })).sort((a,b) => b.timestamp - a.timestamp);
                 
                 distArray.forEach(d => {
@@ -908,9 +924,17 @@
             });
         }
 
+
         // ==========================================
         // MODALS AND FORMS
         // ==========================================
+        window.updateItemDropdown = (catSelectId, itemSelectId) => {
+            const category = document.getElementById(catSelectId).value;
+            const itemSelect = document.getElementById(itemSelectId);
+            const items = INVENTORY_STRUCTURE[category] || [];
+            itemSelect.innerHTML = items.map(i => `<option value="${i}">${i}</option>`).join('');
+        };
+
         window.openModal = (type) => {
             const container = document.getElementById('modal-container');
             const title = document.getElementById('modal-title');
@@ -946,7 +970,6 @@
                 document.getElementById('auth-form').onsubmit = (e) => handleAuth(e, 'signup');
             
             } else if (type === 'donate') {
-                // Keep unchanged for brevity
                 title.innerText = 'Public Support Hub';
                 body.innerHTML = `
                 <div class="space-y-8">
@@ -960,9 +983,13 @@
                 document.getElementById('donate-form').onsubmit = async (e) => {
                     e.preventDefault();
                     if(!db) return;
-                    await push(ref(db, 'donations'), { donor: document.getElementById('don-name').value, item: document.getElementById('don-item').value, status: 'pending', timestamp: Date.now() });
-                    closeModal();
-                    notify('Support Transmitted to HQ!', 'success');
+                    try {
+                        await push(ref(db, 'donations'), { donor: document.getElementById('don-name').value, item: document.getElementById('don-item').value, status: 'pending', timestamp: Date.now() });
+                        closeModal();
+                        notify('Support Transmitted to HQ!', 'success');
+                    } catch (error) {
+                        notify('Database Error: Firebase Rules blocked access.', 'error');
+                    }
                 };
 
             } else if (type === 'add_need') {
@@ -979,11 +1006,15 @@
                 document.getElementById('need-form').onsubmit = async (e) => {
                     e.preventDefault();
                     if(!db) return;
-                    const name = document.getElementById('need-name').value;
-                    const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                    await update(ref(db, `urgent_needs/${id}`), { name, target: parseInt(document.getElementById('need-target').value), current: parseInt(document.getElementById('need-current').value) });
-                    closeModal();
-                    notify('Need Broadcasted', 'success');
+                    try {
+                        const name = document.getElementById('need-name').value;
+                        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                        await update(ref(db, `urgent_needs/${id}`), { name, target: parseInt(document.getElementById('need-target').value), current: parseInt(document.getElementById('need-current').value) });
+                        closeModal();
+                        notify('Need Broadcasted', 'success');
+                    } catch (error) {
+                        notify('Database Error: Firebase Rules blocked access.', 'error');
+                    }
                 };
 
             } else if (type === 'process_donation') {
@@ -992,7 +1023,7 @@
                 <form id="process-form" class="space-y-6 mt-2">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Category</label>
-                        <select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" onchange="window.updateItemDropdown('proc-cat', 'proc-item')">${catOptions}</select>
+                        <select id="proc-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all">${catOptions}</select>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Specific Item</label>
@@ -1002,7 +1033,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity Added</label>
                         <input type="number" id="proc-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4">Add to Central Inventory</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto">Add to Central Inventory</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('proc-cat', 'proc-item'), 0);
@@ -1011,28 +1042,33 @@
                     e.preventDefault();
                     if(!db || !processingDonationId) return;
                     
-                    const catName = document.getElementById('proc-cat').value;
-                    const itemName = document.getElementById('proc-item').value;
-                    const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                    const addedQty = parseInt(document.getElementById('proc-qty').value);
-                    
-                    let currentQty = 0;
-                    let targetQty = 0;
-                    if (globalUrgentNeeds[catId]) {
-                        currentQty = globalUrgentNeeds[catId].current || 0;
-                        targetQty = globalUrgentNeeds[catId].target || 0;
+                    try {
+                        const catName = document.getElementById('proc-cat').value;
+                        const itemName = document.getElementById('proc-item').value;
+                        const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                        const addedQty = parseInt(document.getElementById('proc-qty').value);
+                        
+                        let currentQty = 0;
+                        let targetQty = 0; 
+                        if (globalInventory[dbId]) {
+                            currentQty = globalInventory[dbId].current || 0;
+                            targetQty = globalInventory[dbId].target || 0;
+                        }
+                        
+                        await update(ref(db, `inventory/${dbId}`), { 
+                            category: catName,
+                            item_name: itemName,
+                            current: currentQty + addedQty,
+                            target: targetQty
+                        });
+                        
+                        await update(ref(db, `donations/${processingDonationId}`), { status: 'processed' });
+                        
+                        closeModal();
+                        notify('Inventory Updated! Deficit Recalculated.', 'success');
+                    } catch (error) {
+                        notify('Database Error: Firebase Rules blocked access.', 'error');
                     }
-                    
-                    await update(ref(db, `urgent_needs/${catId}`), { 
-                        name: catName,
-                        current: currentQty + addedQty,
-                        target: targetQty
-                    });
-                    
-                    await update(ref(db, `donations/${processingDonationId}`), { status: 'processed' });
-                    
-                    closeModal();
-                    notify('Inventory Updated! Deficit Recalculated.', 'success');
                 };
 
             } else if (type === 'admin_request') {
@@ -1050,15 +1086,19 @@
                 document.getElementById('req-form').onsubmit = async (e) => {
                     e.preventDefault();
                     if(!db) return;
-                    await push(ref(db, 'requests'), { 
-                        location: sessionProfile.municipality,
-                        items: document.getElementById('req-desc').value,
-                        note: document.getElementById('req-note').value,
-                        status: 'pending',
-                        timestamp: Date.now()
-                    });
-                    closeModal();
-                    notify('Request transmitted to HQ!', 'success');
+                    try {
+                        await push(ref(db, 'requests'), { 
+                            location: sessionProfile.municipality,
+                            items: document.getElementById('req-desc').value,
+                            note: document.getElementById('req-note').value,
+                            status: 'pending',
+                            timestamp: Date.now()
+                        });
+                        closeModal();
+                        notify('Request transmitted to HQ!', 'success');
+                    } catch (error) {
+                        notify('Database Error: Firebase Rules blocked access.', 'error');
+                    }
                 };
 
             } else if (type === 'officer_distribute') {
@@ -1089,40 +1129,45 @@
                     e.preventDefault();
                     if(!db) return;
                     
-                    const dbId = document.getElementById('dist-item').value;
-                    if(!dbId || !localHubInventory[dbId]) { notify('Select a valid item', 'error'); return; }
-                    
-                    const qty = parseInt(document.getElementById('dist-qty').value);
-                    const itemName = localHubInventory[dbId].item_name;
-                    const currentStock = localHubInventory[dbId].current;
-                    
-                    if (qty > currentStock) {
-                        notify('Insufficient stock in Local Hub!', 'error');
-                        return;
-                    }
-                    
-                    await update(ref(db, `hub_inventory/${sessionProfile.municipality}/${dbId}`), {
-                        current: currentStock - qty
-                    });
-                    
-                    await push(ref(db, 'distributions'), {
-                        family_name: document.getElementById('dist-name').value,
-                        item: itemName,
-                        qty: qty,
-                        location: sessionProfile.municipality,
-                        officer_name: sessionProfile.name,
-                        timestamp: Date.now()
-                    });
+                    try {
+                        const dbId = document.getElementById('dist-item').value;
+                        if(!dbId || !localHubInventory[dbId]) { notify('Select a valid item', 'error'); return; }
+                        
+                        const qty = parseInt(document.getElementById('dist-qty').value);
+                        const itemName = localHubInventory[dbId].item_name;
+                        const currentStock = localHubInventory[dbId].current;
+                        
+                        if (qty > currentStock) {
+                            notify('Insufficient stock in Local Hub!', 'error');
+                            return;
+                        }
+                        
+                        await update(ref(db, `hub_inventory/${sessionProfile.municipality}/${dbId}`), {
+                            current: currentStock - qty
+                        });
+                        
+                        await push(ref(db, 'distributions'), {
+                            family_name: document.getElementById('dist-name').value,
+                            item: itemName,
+                            qty: qty,
+                            location: sessionProfile.municipality,
+                            officer_name: sessionProfile.name,
+                            timestamp: Date.now()
+                        });
 
-                    closeModal();
-                    notify('Distribution securely logged!', 'success');
+                        closeModal();
+                        notify('Distribution securely logged!', 'success');
+                    } catch(error) {
+                        console.error(error);
+                        notify('Database Error: Firebase Rules might be blocking access.', 'error');
+                    }
                 };
 
             } else if (type === 'fulfill_request') {
                 title.innerText = 'Allocate for LGU Fleet Pick-Up';
                 body.innerHTML = `
                 <div class="bg-blue-50 p-5 rounded-2xl mb-6 border border-blue-100 shadow-inner">
-                    <p class="text-xs font-bold text-blue-800 leading-relaxed">Select the items from Central Inventory to allocate for this C/MDRRMO Fleet to pick up.</p>
+                    <p class="text-xs font-bold text-blue-800 leading-relaxed">Select the items from Central Inventory to allocate for this city's Logistics Officer to pick up.</p>
                 </div>
                 <form id="fulfill-form" class="space-y-6">
                     <div class="space-y-2">
@@ -1137,7 +1182,7 @@
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quantity to Dispatch</label>
                         <input type="number" id="ful-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-blue-500 focus:bg-white transition-all" required>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4">Deduct & Allocate</button>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 hover:bg-blue-600 hover:-translate-y-0.5 btn-transition mt-4 relative z-50 pointer-events-auto">Deduct & Allocate</button>
                 </form>`;
                 
                 setTimeout(() => window.updateItemDropdown('ful-cat', 'ful-item'), 0);
@@ -1146,33 +1191,37 @@
                     e.preventDefault();
                     if(!db || !processingRequestId) return;
                     
-                    const catName = document.getElementById('ful-cat').value;
-                    const itemName = document.getElementById('ful-item').value;
-                    const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                    const dispatchQty = parseInt(document.getElementById('ful-qty').value);
-                    
-                    let currentQty = 0;
-                    if (globalInventory[dbId]) {
-                        currentQty = globalInventory[dbId].current || 0;
+                    try {
+                        const catName = document.getElementById('ful-cat').value;
+                        const itemName = document.getElementById('ful-item').value;
+                        const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                        const dispatchQty = parseInt(document.getElementById('ful-qty').value);
+                        
+                        let currentQty = 0;
+                        if (globalInventory[dbId]) {
+                            currentQty = globalInventory[dbId].current || 0;
+                        }
+                        
+                        if (currentQty < dispatchQty) {
+                            notify('Insufficient stock in Central Inventory!', 'error');
+                            return;
+                        }
+                        
+                        await update(ref(db, `inventory/${dbId}`), { 
+                            current: currentQty - dispatchQty
+                        });
+                        
+                        await update(ref(db, `requests/${processingRequestId}`), { 
+                            status: 'ready_for_pickup',
+                            dispatched_item: itemName,
+                            dispatched_qty: dispatchQty
+                        });
+                        
+                        closeModal();
+                        notify('Allocated! Awaiting LGU Pick-up.', 'success');
+                    } catch (error) {
+                        notify('Database Error: Firebase Rules blocked access.', 'error');
                     }
-                    
-                    if (currentQty < dispatchQty) {
-                        notify('Insufficient stock in Central Inventory!', 'error');
-                        return;
-                    }
-                    
-                    await update(ref(db, `inventory/${dbId}`), { 
-                        current: currentQty - dispatchQty
-                    });
-                    
-                    await update(ref(db, `requests/${processingRequestId}`), { 
-                        status: 'ready_for_pickup',
-                        dispatched_item: itemName,
-                        dispatched_qty: dispatchQty
-                    });
-                    
-                    closeModal();
-                    notify('Allocated! Awaiting LGU Pick-up.', 'success');
                 };
             }
             lucide.createIcons();
@@ -1212,7 +1261,7 @@
         function notify(msg, type = 'info') {
             const hub = document.getElementById('notification-hub');
             const div = document.createElement('div');
-            const icons = { success: 'check-circle', error: 'alert-triangle', info: 'info' };
+            const icons = { success: 'check-circle-2', error: 'alert-triangle', info: 'info' };
             const bg = { success: 'bg-emerald-500', error: 'bg-rose-500', info: 'bg-slate-900' };
             div.className = `${bg[type]} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-right duration-300 pointer-events-auto border border-white/10`;
             div.innerHTML = `<i data-lucide="${icons[type]}" class="w-5 h-5"></i> <span class="text-xs font-black uppercase tracking-widest">${msg}</span>`;
