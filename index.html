@@ -168,6 +168,7 @@
         let sessionProfile = null;
         let globalInventory = {}; 
         let processingDonationId = null; 
+        let processingRequestId = null; 
         
         const HUBS = [
             { id: 'cebu_city', name: 'Cebu City' },
@@ -326,7 +327,6 @@
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const item = data[id];
-                    // Only show items that have been explicitly assigned a target > 0
                     if (item.target && item.target > 0) {
                         const deficit = item.target - item.current;
                         if (deficit > 0) {
@@ -404,7 +404,8 @@
             
             if (sessionProfile.role === ROLES.SUPER_ADMIN) renderSuperAdminDash();
             else if (sessionProfile.role === ROLES.ADMIN) renderAdminDash();
-            else renderOperationsDash();
+            else if (sessionProfile.role === ROLES.LOGISTICS) renderLogisticsDash();
+            else renderOperationsDash(); // Default Barangay fallback for now
             
             lucide.createIcons();
         }
@@ -461,7 +462,6 @@
                 Object.keys(data).forEach(id => {
                     const item = data[id];
                     
-                    // Central Inventory Layer: Show everything
                     invHtml += `
                         <div class="p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col justify-center items-center text-center">
                             <p class="text-[8px] font-black text-blue-400/80 uppercase tracking-widest mb-1">${item.category}</p>
@@ -470,7 +470,6 @@
                         </div>
                     `;
 
-                    // Needs Controller Layer: ONLY show if Super Admin explicitly set a target > 0
                     if (item.target && item.target > 0) {
                         needsHtml += `
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
@@ -521,14 +520,17 @@
                 let html = '';
                 Object.keys(data).forEach(id => {
                     const r = data[id];
-                    if(r.status === 'dispatched' || r.status === 'fulfilled') return;
+                    // Hide if it's past the pending stage
+                    if(r.status === 'ready_for_pickup' || r.status === 'in_transit' || r.status === 'arrived') return;
+                    
                     html += `
                         <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 flex justify-between items-center">
-                            <div>
+                            <div class="pr-4">
                                 <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${r.location.replace('_', ' ')} HUB</span>
                                 <h4 class="font-black text-slate-800 text-sm uppercase mt-1 italic">${r.items}</h4>
+                                ${r.note ? `<p class="text-[10px] font-medium text-slate-500 mt-1 line-clamp-2">"${r.note}"</p>` : ''}
                             </div>
-                            <button onclick="fulfillRequest('${id}')" class="text-[9px] font-black bg-blue-600 text-white px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-700 shadow-md">Fulfill</button>
+                            <button onclick="window.prepareFulfillRequest('${id}')" class="text-[9px] font-black bg-blue-600 text-white px-4 py-2 rounded-lg uppercase tracking-widest hover:bg-blue-700 shadow-md flex-shrink-0">Allocate for LGU Pick-Up</button>
                         </div>
                     `;
                 });
@@ -541,12 +543,94 @@
             openModal('process_donation');
         };
 
-        window.fulfillRequest = async (id) => {
-            if(!db) return;
-            await update(ref(db, `requests/${id}`), { status: 'dispatched' });
-            notify('Request Marked as Dispatched', 'success');
+        window.prepareFulfillRequest = (id) => {
+            processingRequestId = id;
+            openModal('fulfill_request');
         };
 
+        // ==========================================
+        // NEW: LOGISTICS DASHBOARD (Option A)
+        // ==========================================
+        function renderLogisticsDash() {
+            const container = document.getElementById('dash-content');
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 card-shadow rounded-2xl border-t-8 border-orange-500">
+                        <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-slate-50 pb-4"><i data-lucide="package" class="text-orange-500 w-5 h-5"></i> Awaiting Pick-up at Capitol</h3>
+                        <div id="logistics-pickup" class="space-y-4"></div>
+                    </div>
+                    <div class="bg-slate-900 text-white p-8 card-shadow rounded-2xl border-t-8 border-blue-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-8 opacity-5"><i data-lucide="truck" class="w-48 h-48"></i></div>
+                        <h3 class="text-lg font-black uppercase tracking-tight italic flex items-center gap-2 mb-6 border-b border-white/10 pb-4 relative z-10"><i data-lucide="compass" class="text-blue-400 w-5 h-5"></i> Active Transit to Hub</h3>
+                        <div id="logistics-transit" class="space-y-4 relative z-10"></div>
+                    </div>
+                </div>
+            `;
+            initLogisticsListeners();
+        }
+
+        function initLogisticsListeners() {
+            onValue(ref(db, 'requests'), (snapshot) => {
+                const data = snapshot.val();
+                const pickupContainer = document.getElementById('logistics-pickup');
+                const transitContainer = document.getElementById('logistics-transit');
+                
+                if (!data) {
+                    pickupContainer.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Pending Pickups</p>';
+                    transitContainer.innerHTML = '<p class="text-xs text-slate-500 font-bold uppercase tracking-widest text-center py-10">No Active Cargo</p>';
+                    return;
+                }
+
+                let pickupHtml = '';
+                let transitHtml = '';
+
+                Object.keys(data).forEach(id => {
+                    const r = data[id];
+                    // Logistics Officer only sees THEIR municipality's cargo
+                    if (r.location !== sessionProfile.municipality) return;
+
+                    if (r.status === 'ready_for_pickup') {
+                        pickupHtml += `
+                            <div class="p-5 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="flex justify-between items-start mb-3">
+                                    <span class="text-[9px] font-black text-orange-600 uppercase tracking-widest">HQ Allocation Ready</span>
+                                    <i data-lucide="map-pin" class="text-slate-400 w-4 h-4"></i>
+                                </div>
+                                <h4 class="font-black text-slate-800 text-xl uppercase italic leading-tight mb-1">${r.dispatched_qty}x ${r.dispatched_item}</h4>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Original Request: ${r.items}</p>
+                                <button onclick="window.updateRequestStatus('${id}', 'in_transit')" class="w-full bg-slate-900 text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 btn-transition shadow-md">Confirm Pick-up from Capitol</button>
+                            </div>
+                        `;
+                    } else if (r.status === 'in_transit') {
+                        transitHtml += `
+                            <div class="p-5 bg-white/5 rounded-xl border border-white/10">
+                                <div class="flex justify-between items-start mb-3">
+                                    <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-1"><span class="w-2 h-2 bg-blue-400 rounded-full active-dot"></span> Moving to ${r.location.replace('_', ' ')}</span>
+                                    <i data-lucide="truck" class="text-white/40 w-4 h-4"></i>
+                                </div>
+                                <h4 class="font-black text-slate-100 text-xl uppercase italic leading-tight mb-4">${r.dispatched_qty}x ${r.dispatched_item}</h4>
+                                <button onclick="window.updateRequestStatus('${id}', 'arrived')" class="w-full bg-blue-600 text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 btn-transition shadow-lg shadow-blue-900/50">Mark Arrived at City Hub</button>
+                            </div>
+                        `;
+                    }
+                });
+
+                pickupContainer.innerHTML = pickupHtml || '<p class="text-xs text-slate-400 font-bold uppercase tracking-widest text-center py-10">No Pending Pickups</p>';
+                transitContainer.innerHTML = transitHtml || '<p class="text-xs text-slate-500 font-bold uppercase tracking-widest text-center py-10">No Active Cargo</p>';
+                lucide.createIcons();
+            });
+        }
+
+        window.updateRequestStatus = async (id, newStatus) => {
+            if(!db) return;
+            await update(ref(db, `requests/${id}`), { status: newStatus });
+            if(newStatus === 'in_transit') notify('Cargo Secured. Drive safely.', 'success');
+            if(newStatus === 'arrived') notify('Cargo Delivered to Hub!', 'success');
+        };
+
+        // ==========================================
+        // ADMIN DASHBOARD
+        // ==========================================
         function renderAdminDash() {
             const container = document.getElementById('dash-content');
             container.innerHTML = `
@@ -751,6 +835,64 @@
                     
                     closeModal();
                     notify('Inventory Updated!', 'success');
+                };
+
+            } else if (type === 'fulfill_request') {
+                title.innerText = 'Allocate for LGU Pick-Up';
+                body.innerHTML = `
+                <div class="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100">
+                    <p class="text-[10px] font-bold text-blue-800">Select the items from Central Inventory to allocate for this city's Logistics Officer to pick up.</p>
+                </div>
+                <form id="fulfill-form" class="space-y-5">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select id="ful-cat" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" onchange="window.updateItemDropdown('ful-cat', 'ful-item')">${catOptions}</select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Specific Item</label>
+                        <select id="ful-item" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500"></select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Quantity to Dispatch</label>
+                        <input type="number" id="ful-qty" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-blue-700 btn-transition mt-2">Deduct & Allocate</button>
+                </form>`;
+                
+                setTimeout(() => window.updateItemDropdown('ful-cat', 'ful-item'), 0);
+
+                document.getElementById('fulfill-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    if(!db || !processingRequestId) return;
+                    
+                    const catName = document.getElementById('ful-cat').value;
+                    const itemName = document.getElementById('ful-item').value;
+                    const dbId = `${catName}_${itemName}`.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    const dispatchQty = parseInt(document.getElementById('ful-qty').value);
+                    
+                    let currentQty = 0;
+                    if (globalInventory[dbId]) {
+                        currentQty = globalInventory[dbId].current || 0;
+                    }
+                    
+                    if (currentQty < dispatchQty) {
+                        notify('Insufficient stock in Central Inventory!', 'error');
+                        return;
+                    }
+                    
+                    await update(ref(db, `inventory/${dbId}`), { 
+                        current: currentQty - dispatchQty
+                    });
+                    
+                    // Option A: Now it goes to ready_for_pickup for the local Logistics team
+                    await update(ref(db, `requests/${processingRequestId}`), { 
+                        status: 'ready_for_pickup',
+                        dispatched_item: itemName,
+                        dispatched_qty: dispatchQty
+                    });
+                    
+                    closeModal();
+                    notify('Allocated! Awaiting LGU Pick-up.', 'success');
                 };
             }
             lucide.createIcons();
